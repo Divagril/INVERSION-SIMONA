@@ -24,7 +24,6 @@ const DashboardInversion: React.FC = () => {
 
   // ESTADOS
   const [stats, setStats] = useState<any>(null);
-  const [productos, setProductos] = useState<any[]>([]);
   const [nombresFiltro, setNombresFiltro] = useState<string[]>([]);
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
   const [error, setError] = useState(false);
@@ -47,9 +46,6 @@ const DashboardInversion: React.FC = () => {
       const nombres = await getNombresInversiones();
       setNombresFiltro(nombres);
 
-      // 3. Datos de productos para la tabla de márgenes
-      const dataProds = await getProductos();
-      setProductos(dataProds);
     } catch (e) {
       console.error("Error al cargar Dashboard:", e);
       setError(true);
@@ -160,54 +156,6 @@ const DashboardInversion: React.FC = () => {
             <Line type="monotone" dataKey="inversion" stroke="#f59e0b" strokeWidth={4} name="Inversión" dot={{ r: 6 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* TABLA DE GANANCIAS SIMPLIFICADA */}
-      <h2 style={{ marginTop: '40px', color: '#1e293b', fontSize: '24px', fontWeight: '800' }}>
-        Ganancias por Producto
-      </h2>
-      <div className="tarjeta-blanca" style={{ marginTop: '10px', padding: '0', overflow: 'hidden' }}>
-        <div className="contenedor-tabla-scroll" style={{ width: '100%', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-            <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-              <tr style={{ textAlign: 'center' }}>
-                <th style={{ padding: '20px', textAlign: 'left', color: '#64748b', fontSize: '13px' }}>PRODUCTO</th>
-                <th style={{ padding: '20px', color: '#64748b', fontSize: '13px' }}>P. VENTA</th>
-                <th style={{ padding: '20px', color: '#64748b', fontSize: '13px' }}>GANANCIA (MARGEN)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productos.length === 0 ? (
-                <tr><td colSpan={3} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8' }}>Sin datos disponibles</td></tr>
-              ) : (
-                productos
-                  .filter(p => p.nombre.toLowerCase().includes(filtros.producto.toLowerCase()))
-                  .map((p, i) => {
-                    const margen = p.precio - (p.precio_compra || 0);
-                    return (
-                      <tr key={i} className="fila-historial" style={{ borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                        <td style={{ padding: '20px', fontWeight: 'bold', textAlign: 'left', color: '#1e293b' }}>{p.nombre}</td>
-                        <td style={{ padding: '20px', color: '#3b82f6', fontWeight: '700' }}>{fMone(p.precio)}</td>
-                        <td style={{ padding: '20px' }}>
-                          <span style={{
-                            padding: '6px 12px', borderRadius: '8px',
-                            background: margen > 0 ? '#dcfce7' : '#fee2e2',
-                            color: margen > 0 ? '#166534' : '#991b1b',
-                            fontWeight: 'bold'
-                          }}>
-                            {fMone(margen)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div style={{ padding: '12px', textAlign: 'center', background: '#f8fafc', color: '#94a3b8', fontSize: '12px' }} className="solo-movil">
-          ← Desliza para ver más detalles →
-        </div>
       </div>
     </div>
   );
