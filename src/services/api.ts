@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://inversion-simona-api.onrender.com';
 
 export const getInversiones = () => axios.get(`${API_URL}/inversiones`).then(r => r.data);
 export const guardarInversion = (d: any) => axios.post(`${API_URL}/productos/inversion`, d);

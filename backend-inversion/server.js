@@ -27,6 +27,10 @@ const Venta = mongoose.model('Venta', new mongoose.Schema({
     productos: Array,
     fecha: { type: Date, default: Date.now }
 }), 'ventas');
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://inversion-simona.onrender.com' // Aquí va la URL de tu FRONTEND
+}));
 
 const Producto = mongoose.model('Producto', new mongoose.Schema({
     nombre: String, precio: Number, precio_compra: Number, cantidad: Number, unidad: String
