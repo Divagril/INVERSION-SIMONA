@@ -6,9 +6,7 @@ import {
   ArrowLeft, 
   Filter, 
   Calendar, 
-  BarChart3,
-  DollarSign,
-  PieChart as PieIcon
+  BarChart3
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -36,15 +34,13 @@ const DashboardInversion: React.FC = () => {
     return num.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
   };
 
-  // CARGAR DATOS DESDE EL BACKEND
+  // CARGAR DATOS
   const cargarTodo = async () => {
     try {
       setError(false);
-      // 1. Estadísticas filtradas
       const dataStats = await getRentabilidad(filtros);
       if (dataStats) setStats(dataStats);
 
-      // 2. Nombres únicos de compras para el filtro
       const nombres = await getNombresInversiones();
       setNombresFiltro(nombres);
 
@@ -59,7 +55,7 @@ const DashboardInversion: React.FC = () => {
   }, [filtros]);
 
   // PANTALLA DE CARGA O ERROR
-  if (error) return <div className="cargando">⚠️ Error al conectar con el servidor. Revisa tu conexión.</div>;
+  if (error) return <div className="cargando">⚠️ Error al conectar con el servidor.</div>;
   if (!stats) return <div className="cargando">Generando reporte de rentabilidad...</div>;
 
   return (
@@ -141,7 +137,7 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
-      {/* GRÁFICO DE TENDENCIA MEJORADO (AREA CHART) */}
+      {/* GRÁFICO DE TENDENCIA (AREA CHART) */}
       <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '480px', padding: '30px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
             <div style={{ background: '#eff6ff', padding: '10px', borderRadius: '12px' }}>
@@ -149,7 +145,7 @@ const DashboardInversion: React.FC = () => {
             </div>
             <div>
                 <h3 style={{ margin: 0, color: '#1e293b', fontSize: '20px', fontWeight: '800' }}>Balance de Crecimiento</h3>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Historial mensual: Dinero invertido vs Ganancia de ventas</p>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Inversión vs Ventas por mes</p>
             </div>
         </div>
 
@@ -165,52 +161,13 @@ const DashboardInversion: React.FC = () => {
                 <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 13, fontWeight: 'bold' }}
-              dy={10}
-            />
-            
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 12 }}
-              tickFormatter={(val) => `S/ ${val}`}
-            />
-            
-            <Tooltip 
-              contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '15px' }}
-              formatter={(value: any) => [fMone(value), ""]}
-            />
-            
+            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 13, fontWeight: 'bold' }} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `S/ ${val}`} />
+            <Tooltip contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '15px' }} formatter={(value: any) => [fMone(value), ""]} />
             <Legend verticalAlign="top" align="right" height={40} iconType="circle" />
-
-            <Area 
-              type="monotone" 
-              dataKey="ventas" 
-              stroke="#3b82f6" 
-              strokeWidth={4} 
-              fillOpacity={1} 
-              fill="url(#colorVentas)" 
-              name="Ingresos de Ventas"
-              activeDot={{ r: 8, strokeWidth: 0 }}
-            />
-
-            <Area 
-              type="monotone" 
-              dataKey="inversion" 
-              stroke="#f59e0b" 
-              strokeWidth={4} 
-              fillOpacity={1} 
-              fill="url(#colorInversion)" 
-              name="Inversión Realizada"
-              activeDot={{ r: 8, strokeWidth: 0 }}
-            />
+            <Area type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorVentas)" name="Ingresos de Ventas" activeDot={{ r: 8, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#colorInversion)" name="Inversión Realizada" activeDot={{ r: 8, strokeWidth: 0 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
