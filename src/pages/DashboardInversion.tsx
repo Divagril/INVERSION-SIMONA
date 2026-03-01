@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getRentabilidad, getNombresInversiones } from '../services/api'; // <--- Se quitó getProductos de aquí
+import { getRentabilidad, getNombresInversiones } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
@@ -22,27 +22,25 @@ import {
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
 
-  // ESTADOS
+  // ESTADOS (He quitado 'productos' de aquí)
   const [stats, setStats] = useState<any>(null);
   const [nombresFiltro, setNombresFiltro] = useState<string[]>([]);
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
   const [error, setError] = useState(false);
 
-  // UTILIDAD: FORMATEAR MONEDA (S/. PEN)
+  // UTILIDAD: FORMATEAR MONEDA
   const fMone = (n: any) => {
     const num = Number(n) || 0;
     return num.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
   };
 
-  // CARGAR DATOS DESDE EL BACKEND
+  // CARGAR DATOS
   const cargarTodo = async () => {
     try {
       setError(false);
-      // 1. Estadísticas filtradas (Inversión, Ventas, Gráfico)
       const dataStats = await getRentabilidad(filtros);
       if (dataStats) setStats(dataStats);
 
-      // 2. Nombres únicos de compras para el buscador/filtro
       const nombres = await getNombresInversiones();
       setNombresFiltro(nombres);
 
@@ -56,8 +54,7 @@ const DashboardInversion: React.FC = () => {
     cargarTodo();
   }, [filtros]);
 
-  // PANTALLA DE CARGA O ERROR
-  if (error) return <div className="cargando">⚠️ Error al conectar con el servidor. Revisa tu conexión.</div>;
+  if (error) return <div className="cargando">⚠️ Error al conectar con el servidor.</div>;
   if (!stats) return <div className="cargando">Generando reporte de rentabilidad...</div>;
 
   return (
@@ -119,7 +116,7 @@ const DashboardInversion: React.FC = () => {
         </button>
       </div>
 
-      {/* INDICADORES (KPIs) */}
+      {/* INDICADORES PRINCIPALES */}
       <div className="fila-indicadores">
         <div className="tarjeta-blanca indicador">
           <span className="subtitulo">Inversión Total</span>
@@ -139,7 +136,7 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
-      {/* GRÁFICO DE TENDENCIA */}
+      {/* GRÁFICO (Aquí termina el componente, NO HAY TABLA DEBAJO) */}
       <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '400px', padding: '30px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <TrendingUp size={20} color="#64748b" />
