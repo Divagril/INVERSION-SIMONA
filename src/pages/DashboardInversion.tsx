@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getRentabilidad, getProductos, getNombresInversiones } from '../services/api';
+import { getRentabilidad, getNombresInversiones } from '../services/api'; // <--- Se quitó getProductos de aquí
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
