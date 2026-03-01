@@ -6,7 +6,8 @@ import {
   ArrowLeft, 
   Filter, 
   Calendar, 
-  BarChart3
+  BarChart3,
+  History
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -54,7 +55,6 @@ const DashboardInversion: React.FC = () => {
     cargarTodo();
   }, [filtros]);
 
-  // PANTALLA DE CARGA O ERROR
   if (error) return <div className="cargando">⚠️ Error al conectar con el servidor.</div>;
   if (!stats) return <div className="cargando">Generando reporte de rentabilidad...</div>;
 
@@ -137,8 +137,8 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
-      {/* GRÁFICO DE TENDENCIA (AREA CHART) */}
-      <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '480px', padding: '30px' }}>
+      {/* GRÁFICO DE TENDENCIA */}
+      <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '450px', padding: '30px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
             <div style={{ background: '#eff6ff', padding: '10px', borderRadius: '12px' }}>
                 <TrendingUp size={24} color="#3b82f6" />
@@ -166,10 +166,68 @@ const DashboardInversion: React.FC = () => {
             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `S/ ${val}`} />
             <Tooltip contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '15px' }} formatter={(value: any) => [fMone(value), ""]} />
             <Legend verticalAlign="top" align="right" height={40} iconType="circle" />
-            <Area type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorVentas)" name="Ingresos de Ventas" activeDot={{ r: 8, strokeWidth: 0 }} />
-            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#colorInversion)" name="Inversión Realizada" activeDot={{ r: 8, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorVentas)" name="Ventas" activeDot={{ r: 8, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#colorInversion)" name="Inversión" activeDot={{ r: 8, strokeWidth: 0 }} />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* NUEVA TABLA: HISTORIAL DE RENDIMIENTO MENSUAL */}
+      <div style={{ marginTop: '40px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+          <History size={24} color="#1e293b" />
+          <h3 style={{ margin: 0, color: '#1e293b', fontSize: '20px', fontWeight: '800' }}>HISTORIAL MENSUAL</h3>
+      </div>
+
+      <div className="tarjeta-blanca" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="contenedor-tabla-scroll">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '20px', textAlign: 'left', color: '#64748b', fontSize: '13px' }}>MES / FECHA</th>
+                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>INVERSIÓN TOTAL</th>
+                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>INGRESOS BRUTOS</th>
+                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>GANANCIA NETA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.grafico && stats.grafico.length > 0 ? (
+                stats.grafico.map((row: any, i: number) => {
+                  const gananciaRow = row.ventas - row.inversion;
+                  return (
+                    <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '20px', fontWeight: 'bold', color: '#1e293b', textTransform: 'capitalize' }}>
+                        {row.name}
+                      </td>
+                      <td style={{ padding: '20px', textAlign: 'center', color: '#f59e0b', fontWeight: 'bold' }}>
+                        {fMone(row.inversion)}
+                      </td>
+                      <td style={{ padding: '20px', textAlign: 'center', color: '#3b82f6', fontWeight: 'bold' }}>
+                        {fMone(row.ventas)}
+                      </td>
+                      <td style={{ padding: '20px', textAlign: 'center' }}>
+                        <span style={{
+                          padding: '6px 15px', borderRadius: '10px',
+                          background: gananciaRow >= 0 ? '#dcfce7' : '#fee2e2',
+                          color: gananciaRow >= 0 ? '#166534' : '#991b1b',
+                          fontWeight: '900',
+                          fontSize: '15px'
+                        }}>
+                          {fMone(gananciaRow)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8' }}>
+                    No hay datos históricos disponibles aún.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
