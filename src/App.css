@@ -1,0 +1,381 @@
+/* --- RESET GENERAL --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html, #root {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.pantalla-principal {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* --- HEADER / TITULO --- */
+.barra-titulo {
+  background: #1e293b;
+  color: white;
+  padding: 30px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.barra-titulo span {
+  font-size: 35px;
+  font-weight: 900;
+}
+
+/* --- BOTONES --- */
+.btn-dashboard {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-dashboard:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.btn-accion-gigante {
+  width: 100%;
+  padding: 25px;
+  font-size: 22px;
+  font-weight: 800;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  transition: 0.2s;
+}
+
+.btn-verde { background: #27ae60; box-shadow: 0 6px 0 #1e8449; }
+.btn-gris { background: #94a3b8; box-shadow: 0 6px 0 #64748b; }
+
+.btn-verde:active, .btn-gris:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* --- TARJETAS E INDICADORES --- */
+.fila-indicadores {
+  display: flex;
+  gap: 25px;
+}
+
+.tarjeta-blanca {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.indicador {
+  flex: 1;
+  text-align: center;
+}
+
+.subtitulo {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.numero-gigante {
+  font-size: 60px;
+  font-weight: 900;
+}
+
+.numero-grande {
+  font-size: 45px;
+  font-weight: 800;
+}
+
+/* --- COLORES --- */
+.color-naranja { color: #f59e0b; }
+.color-verde { color: #10b981; }
+.color-azul { color: #3b82f6; }
+.color-rojo { color: #ef4444; }
+
+/* --- LAYOUT FORMULARIO --- */
+.layout-central {
+  display: flex;
+  gap: 30px;
+}
+
+.formulario { flex: 1.2; }
+.columna-resumen { 
+  flex: 0.8; 
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.resumen-item {
+  text-align: center;
+  padding: 25px !important;
+}
+
+/* --- INPUTS --- */
+.etiqueta-grande {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 10px;
+}
+
+.campo-gigante {
+  width: 100%;
+  padding: 18px;
+  font-size: 22px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  margin-bottom: 25px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.campo-gigante:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* --- ESTADOS --- */
+.cargando {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.borde-verde { border: 4px solid #10b981 !important; }
+.borde-rojo { border: 4px solid #ef4444 !important; }
+
+.seccion-formulario-centrada {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.seccion-formulario-centrada .formulario {
+  width: 100%;
+  max-width: 800px; /* Formulario más ancho y cómodo */
+  padding: 50px;
+}
+
+table th {
+  text-transform: uppercase;
+  font-size: 13px;
+  color: #64748b;
+  letter-spacing: 1px;
+}
+
+table td {
+  font-size: 16px;
+  color: #334155;
+}
+
+.borde-verde {
+  border: 3px solid #10b981 !important;
+  background: #f0fdf4 !important;
+}
+/* Contenedor del input para que el símbolo no flote raro */
+.contenedor-input-soles {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.btn-icon {
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.btn-edit { background: #e0f2fe; color: #0369a1; }
+.btn-edit:hover { background: #bae6fd; }
+
+.btn-delete { background: #fee2e2; color: #991b1b; }
+.btn-delete:hover { background: #fecaca; }
+
+.borde-azul {
+  border: 3px solid #3b82f6 !important;
+  background-color: #f0f7ff !important;
+}
+
+.badge-edicion {
+    background: #3b82f6;
+    color: white;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* El símbolo S/. fijo a la izquierda */
+.simbolo-soles {
+  position: absolute;
+  left: 20px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #1e293b; /* Color oscuro profesional */
+  pointer-events: none; /* Para que si haces clic en S/. el cursor entre al input */
+  z-index: 10;
+}
+
+/* El input con espacio suficiente para que el número empiece después del S/. */
+.input-con-prefijo {
+  padding-left: 70px !important; /* Espacio extra para que no choque */
+  width: 100%;
+  margin-bottom: 0px !important; /* Quitamos margen para que no se mueva */
+}
+
+/* Opcional: Para que cuando hagas foco brille de color azul */
+.input-con-prefijo:focus {
+  border-color: #3b82f6;
+  background-color: white;
+}
+/* --- RESPONSIVE DESIGN (MÓVIL) --- */
+@media (max-width: 768px) {
+  .pantalla-principal {
+    padding: 15px; /* Menos espacio en las orillas */
+  }
+
+  .barra-titulo {
+    flex-direction: column; /* Título arriba, botón abajo */
+    gap: 15px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .barra-titulo span {
+    font-size: 24px; /* Título más pequeño en móvil */
+  }
+
+  /* El formulario ahora ocupa todo el ancho */
+  .formulario {
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Las filas de dos columnas (Cantidad / Costo) ahora son una sola columna */
+  .seccion-formulario-centrada div[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  /* Ajuste del contenedor de Soles para que no se rompa */
+  .contenedor-input-soles {
+    width: 100%;
+  }
+
+  .campo-gigante {
+    font-size: 18px; /* Texto más cómodo para el dedo */
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .simbolo-soles {
+    font-size: 18px;
+    left: 15px;
+  }
+
+  .input-con-prefijo {
+    padding-left: 50px !important;
+  }
+
+  /* Botones apilados uno sobre otro */
+  .btn-accion-gigante {
+    width: 100% !important;
+    font-size: 18px;
+    padding: 15px;
+  }
+
+  /* TABLA RESPONSIVE: Permite deslizar hacia los lados si es muy ancha */
+  .tarjeta-blanca {
+    overflow-x: auto; /* Scroll horizontal en la tabla */
+    border-radius: 15px;
+  }
+
+  table {
+    min-width: 600px; /* Evita que la tabla se comprima demasiado */
+  }
+
+  .fila-indicadores {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .numero-gigante {
+    font-size: 35px;
+  }
+}
+/* --- NUEVA REGLA PARA EL SCROLL DE LA TABLA --- */
+.contenedor-tabla-scroll {
+  width: 100%;
+  overflow-x: auto; /* Permite mover hacia los lados */
+  display: block;
+  -webkit-overflow-scrolling: touch; /* Suavidad en iPhone/Android */
+}
+
+/* Forzamos un ancho mínimo a la tabla en móviles para que no se amontone */
+@media (max-width: 768px) {
+  .contenedor-tabla-scroll table {
+    min-width: 800px; /* Al ser 800px, aparecerá la barra de scroll en el cel */
+  }
+
+  /* Opcional: una sombra sutil para indicar que hay más contenido a la derecha */
+  .contenedor-tabla-scroll {
+    border-radius: 0 0 15px 15px;
+    box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.2);
+  }
+}
+/* --- RESPONSIVE --- */
+@media (max-width: 1100px) {
+  .layout-central, .fila-indicadores {
+    flex-direction: column;
+  }
+}
