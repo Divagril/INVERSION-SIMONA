@@ -6,8 +6,7 @@ import {
   ArrowLeft, 
   Filter, 
   Calendar, 
-  BarChart3, 
-  DollarSign 
+  BarChart3
 } from 'lucide-react';
 import { 
   LineChart, 
