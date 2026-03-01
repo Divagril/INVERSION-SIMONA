@@ -4,12 +4,20 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// --- CONFIGURACIÓN DE CORS (Solo una vez) ---
+app.use(cors({
+  origin: ['https://inversion-simona.onrender.com', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
+// --- CONEXIÓN A MONGODB ---
+mongoose.connect(process.env.MONGO_URI || process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Conectado"))
-    .catch(err => console.error("❌ Error:", err));
+    .catch(err => console.error("❌ Error de conexión MongoDB:", err));
 
 // --- MODELOS ---
 const Inversion = mongoose.model('Inversion', new mongoose.Schema({
@@ -27,40 +35,28 @@ const Venta = mongoose.model('Venta', new mongoose.Schema({
     productos: Array,
     fecha: { type: Date, default: Date.now }
 }), 'ventas');
-const cors = require('cors');
-app.use(cors({
-  origin: ['https://inversion-simona.onrender.com', 'http://localhost:5173'], // Permite tu web de Render y tu PC local
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
-app.use(express.json());
 
 const Producto = mongoose.model('Producto', new mongoose.Schema({
     nombre: String, precio: Number, precio_compra: Number, cantidad: Number, unidad: String
 }), 'productos');
 
+// --- RUTAS ---
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const { desde, hasta, producto } = req.query;
-        
         let filtro = {};
         if (desde && hasta) filtro.fecha = { $gte: new Date(desde), $lte: new Date(hasta) };
         if (producto) filtro.nombre = new RegExp(producto, 'i');
 
         const [inversiones, ventas] = await Promise.all([
             Inversion.find(filtro),
-            // Para ventas, el filtro es un poco diferente si buscamos por producto específico dentro del array
             Venta.find(desde && hasta ? { fecha: filtro.fecha } : {})
         ]);
 
-        // 1. Cálculos de totales con filtro
         const inversionTotal = inversiones.reduce((acc, inv) => acc + (Number(inv.costo_total) || 0), 0);
         const ingresosTotales = ventas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
         const gananciaNeta = ingresosTotales > 0 ? ingresosTotales - inversionTotal : 0;
 
-        // 2. Datos para el GRÁFICO (Agrupado por Mes)
-        // Creamos un mapa de los últimos meses
         const datosGrafico = inversiones.reduce((acc, inv) => {
             const mes = new Date(inv.fecha).toLocaleString('es-ES', { month: 'short' });
             if (!acc[mes]) acc[mes] = { name: mes, inversion: 0, ventas: 0 };
@@ -78,15 +74,13 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             inversionTotalEnVentas: inversionTotal,
             ingresosTotales: ingresosTotales,
             gananciaNeta: gananciaNeta,
-            grafico: Object.values(datosGrafico) // Convertimos el mapa a array para el gráfico
+            grafico: Object.values(datosGrafico)
         });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-
-// --- RUTAS CRUD INVERSIONES ---
 app.get('/api/inversiones', async (req, res) => {
     const list = await Inversion.find().sort({ fecha: -1 });
     res.json(list);
@@ -128,10 +122,9 @@ app.get('/api/productos', async (req, res) => {
     const prods = await Producto.find().sort({ nombre: 1 });
     res.json(prods);
 });
-// OBTENER NOMBRES ÚNICOS DESDE LAS COMPRAS (INVERSIONES)
+
 app.get('/api/nombres-inversiones', async (req, res) => {
     try {
-        // .distinct('nombre') devuelve la lista sin repetir nombres
         const nombres = await Inversion.distinct('nombre');
         res.json(nombres);
     } catch (e) {
@@ -139,7 +132,6 @@ app.get('/api/nombres-inversiones', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 10000; // Render asigna el puerto automáticamente
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-});
+// --- INICIO DEL SERVIDOR (PUERTO DINÁMICO) ---
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Servidor en puerto ${PORT}`));
