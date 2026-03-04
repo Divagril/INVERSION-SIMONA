@@ -126,27 +126,31 @@ app.delete('/api/inversiones/:id', async (req, res) => {
     }
 });
 
-
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
 
-        // Construir filtro para las consultas
-        let query = {};
+        // 1. Definimos las consultas
+        let queryInv = producto ? { nombre: producto } : {};
+        let queryVts = producto ? { "productos.nombre": producto } : {};
+
         if (desde || hasta) {
-            query.fecha = {};
-            if (desde) query.fecha.$gte = new Date(desde);
-            if (hasta) query.fecha.$lte = new Date(hasta);
+            const fechaFiltro = {};
+            if (desde) fechaFiltro.$gte = new Date(desde);
+            if (hasta) fechaFiltro.$lte = new Date(hasta);
+            queryInv.fecha = fechaFiltro;
+            queryVts.fecha = fechaFiltro;
         }
 
+        // 2. Ejecutamos las consultas (AQUÍ ESTÁ EL ERROR QUE TENÍAS)
         const [invs, vts, clts] = await Promise.all([
-            db.collection('inversions').find(producto ? { nombre: producto } : query).toArray(),
-            db.collection('ventas').find(producto ? { "productos.nombre": producto } : query).toArray(),
+            db.collection('inversions').find(queryInv).toArray(),
+            db.collection('ventas').find(queryVts).toArray(),
             db.collection('clientes').find({}).toArray()
         ]);
 
-        // ... (resto de tus cálculos igual que antes)
+        // 3. Cálculos
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const plataPorCobrar = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
@@ -158,7 +162,11 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             dineroEnCaja: totalVentas - plataPorCobrar,
             gananciaReal: (totalVentas - plataPorCobrar) - totalInversion
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+
+    } catch (e) {
+        console.error("Error en Backend:", e);
+        res.status(500).json({ error: e.message });
+    }
 });
 
 
