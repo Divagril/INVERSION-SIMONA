@@ -50,46 +50,52 @@ app.get('/api/inversiones', async (req, res) => {
     }
 });
 
-
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const db = mongoose.connection.db;
+        const [invs, vts, clts] = await Promise.all([
+            db.collection('inversions').find({}).toArray(),
+            db.collection('ventas').find({}).toArray(),
+            db.collection('clientes').find({}).toArray()
+        ]);
 
-        // Leemos las colecciones forzando el nombre exacto de tu DB (sistema_pos_v5)
-        const invs = await db.collection('inversions').find({}).toArray();
-        const vts = await db.collection('ventas').find({}).toArray();
-        const clts = await db.collection('clientes').find({}).toArray();
-
-        console.log(`Datos leídos -> Inversiones: ${invs.length}, Ventas: ${vts.length}, Clientes: ${clts.length}`);
-
-        console.log("INVERSIONES ENCONTRADAS:", invs.length);
-        console.log("VENTAS ENCONTRADAS:", vts.length);
-        console.log("CLIENTES ENCONTRADOS:", clts.length);
-
-        // 1. SUMAR INVERSIONES (campo: costo_total)
-        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || 0)), 0);
-
-        // 2. SUMAR VENTAS (campo: total)
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
-
-        // 3. SUMAR DEUDAS (campo: deudaTotal)
         const plataPorCobrar = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
-        // 4. CÁLCULOS
-        const dineroEnCaja = totalVentas - plataPorCobrar;
-        const gananciaReal = dineroEnCaja - totalInversion;
+        const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+        const graficoMap = {};
+
+        // Función auxiliar para obtener mes seguro
+        const getMes = (fecha) => {
+            const d = new Date(fecha);
+            return !isNaN(d) ? d.getMonth() : new Date().getMonth(); // Si falla, usa mes actual
+        };
+
+        // Procesar inversiones
+        invs.forEach(i => {
+            const m = meses[getMes(i.fecha)];
+            if (!graficoMap[m]) graficoMap[m] = { name: m, inversion: 0, ventas: 0 };
+            graficoMap[m].inversion += Number(i.costo_total || i.costoTotal || 0);
+        });
+
+        // Procesar ventas
+        vts.forEach(v => {
+            const m = meses[getMes(v.fecha)];
+            if (!graficoMap[m]) graficoMap[m] = { name: m, inversion: 0, ventas: 0 };
+            graficoMap[m].ventas += Number(v.total || 0);
+        });
 
         res.json({
             inversionTotal: totalInversion,
             ingresosTotalesVentas: totalVentas,
             plataPorCobrar: plataPorCobrar,
-            dineroEnCaja: dineroEnCaja,
-            gananciaReal: gananciaReal,
-            grafico: [] // Por ahora vacío para probar que los números aparezcan
+            dineroEnCaja: totalVentas - plataPorCobrar,
+            gananciaReal: (totalVentas - plataPorCobrar) - totalInversion,
+            grafico: Object.values(graficoMap)
         });
 
     } catch (e) {
-        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
 });
