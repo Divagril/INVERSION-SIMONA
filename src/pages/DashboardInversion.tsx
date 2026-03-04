@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getRentabilidad } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { getRentabilidad, getNombresInversiones } from '../services/api';
 
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +11,12 @@ const DashboardInversion: React.FC = () => {
 
   const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
+  const [nombresProductos, setNombresProductos] = useState<string[]>([]);
+
+  useEffect(() => {
+    getRentabilidad(filtros).then(setStats);
+    getNombresInversiones().then(setNombresProductos); // Carga los nombres
+  }, [filtros]);
   useEffect(() => {
     getRentabilidad(filtros).then(setStats).catch(() => console.log("Error al cargar"));
   }, [filtros]);
@@ -28,9 +34,23 @@ const DashboardInversion: React.FC = () => {
       </div>
 
       <div className="tarjeta-blanca" style={{ marginTop: '30px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, desde: e.target.value})} />
-        <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, hasta: e.target.value})} />
-        <input type="text" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} placeholder="Producto" onChange={e => setFiltros({...filtros, producto: e.target.value})} />
+          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, desde: e.target.value})} />
+          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, hasta: e.target.value})} />
+    
+          <div style={{ flex: 1, position: 'relative' }}>
+              <input 
+                  list="listaProductos" 
+                  className="campo-gigante" 
+                  style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%'}} 
+                  placeholder="Seleccionar Producto" 
+                  onChange={e => setFiltros({...filtros, producto: e.target.value})} 
+              />
+              <datalist id="listaProductos">
+                  {nombresProductos.map((nombre, index) => (
+                      <option key={index} value={nombre} />
+                  ))}
+              </datalist>
+          </div>
       </div>
 
       <div className="fila-indicadores" style={{marginTop: '30px'}}>
