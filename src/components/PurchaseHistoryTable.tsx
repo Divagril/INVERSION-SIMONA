@@ -107,7 +107,7 @@ const PurchaseHistoryTable: React.FC<Props> = ({ refreshKey, onEdit }) => {
                   {/* FORMATO Y CÁLCULO DE UNIDADES */}
                   <td style={{ padding: '15px', textAlign: 'center' }}>
                     <div style={{ fontWeight: '800', color: '#334155', fontSize: '15px' }}>
-                      {inv.cantidad_formato} {inv.formato_compra}
+                      {inv.cantidad_formato} {inv.formato_compra} {inv.costo_total}
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                       <Box size={12} /> {inv.total_unidades_compradas || (inv.cantidad_formato * (inv.unidades_por_formato || 1))} Unidades

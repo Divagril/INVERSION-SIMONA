@@ -34,22 +34,21 @@ app.post('/api/productos/inversion', async (req, res) => {
 app.get('/api/inversiones', async (req, res) => {
     try {
         const invs = await Inversion.find({});
-        // Normalizamos los datos antes de enviarlos al frontend
-        const invsNormalizadas = invs.map(i => ({
+        // Normalizamos los nombres de campos para que el frontend los entienda
+        const datosNormalizados = invs.map(i => ({
             _id: i._id,
-            nombre: i.nombre,
-            formato_compra: i.formato_compra || i.formato || "N/A",
+            nombre: i.nombre || "Sin nombre",
+            formato_compra: i.formato_compra || i.formato || "UNIDAD",
             cantidad_formato: i.cantidad_formato || i.cantidadFormato || 0,
             unidades_por_formato: i.unidades_por_formato || i.unidadesPorFormato || 1,
             costo_total: i.costo_total || i.costoTotal || 0,
             fecha: i.fecha || new Date()
         }));
-        res.json(invsNormalizadas);
+        res.json(datosNormalizados);
     } catch (e) {
         res.status(500).json([]);
     }
 });
-
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const db = mongoose.connection.db;
