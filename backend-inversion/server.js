@@ -131,40 +131,36 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
 
-        // 1. Definimos las consultas
-        let queryInv = producto ? { nombre: producto } : {};
-        let queryVts = producto ? { "productos.nombre": producto } : {};
+        // 1. Consultas base
+        const queryInv = producto ? { nombre: producto } : {};
+        const queryVts = producto ? { "productos.nombre": producto } : {};
 
-        if (desde || hasta) {
-            const fechaFiltro = {};
-            if (desde) fechaFiltro.$gte = new Date(desde);
-            if (hasta) fechaFiltro.$lte = new Date(hasta);
-            queryInv.fecha = fechaFiltro;
-            queryVts.fecha = fechaFiltro;
-        }
-
-        // 2. Ejecutamos las consultas (AQUÍ ESTÁ EL ERROR QUE TENÍAS)
+        // 2. Ejecutar con Promise.all y asegurar que TODO esté definido
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray(),
             db.collection('ventas').find(queryVts).toArray(),
             db.collection('clientes').find({}).toArray()
         ]);
 
-        // 3. Cálculos
+        // 3. Cálculos seguros (usando || 0 para evitar errores si algo falta)
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const plataPorCobrar = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
+        const dineroEnCaja = totalVentas - plataPorCobrar;
+        const gananciaReal = dineroEnCaja - totalInversion;
+
+        // 4. Respuesta
         res.json({
             inversionTotal: totalInversion,
             ingresosTotalesVentas: totalVentas,
             plataPorCobrar: plataPorCobrar,
-            dineroEnCaja: totalVentas - plataPorCobrar,
-            gananciaReal: (totalVentas - plataPorCobrar) - totalInversion
+            dineroEnCaja: dineroEnCaja,
+            gananciaReal: gananciaReal
         });
 
     } catch (e) {
-        console.error("Error en Backend:", e);
+        console.error("Error crítico:", e);
         res.status(500).json({ error: e.message });
     }
 });
