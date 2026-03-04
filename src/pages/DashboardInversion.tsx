@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { getRentabilidad } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+
 
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
@@ -52,18 +53,31 @@ const DashboardInversion: React.FC = () => {
       </div>
 
       <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '400px' }}>
-        <h3 className="subtitulo">Evolución: Inversión vs Caja</h3>
-        <ResponsiveContainer width="100%" height="90%">
-          <AreaChart data={stats.grafico}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" />
-            <YAxis tickFormatter={(v: number) => `S/ ${v}`} />
-            <Tooltip formatter={(v: any) => [fMone(v), ""]} />
-            <Area type="monotone" dataKey="caja" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="Efectivo" />
-            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" fill="transparent" name="Inversión" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+           <h3 className="subtitulo">Distribución: Inversión vs Caja</h3>
+           <ResponsiveContainer width="100%" height="90%">
+               <PieChart>
+                   <Pie
+                       data={[
+                           { name: 'Efectivo en Caja', value: stats.dineroEnCaja },
+                           { name: 'Por Cobrar', value: stats.plataPorCobrar },
+                           { name: 'Inversión', value: stats.inversionTotal }
+                       ]}
+                       cx="50%"
+                       cy="50%"
+                       innerRadius={60} // Esto crea el hueco de la dona
+                       outerRadius={100}
+                       paddingAngle={5}
+                       dataKey="value"
+                   >
+                       <Cell fill="#10b981" /> {/* Verde - Caja */}
+                       <Cell fill="#ef4444" /> {/* Rojo - Fiados */}
+                       <Cell fill="#f59e0b" /> {/* Naranja - Inversión */}
+                   </Pie>
+                   <Tooltip />
+                   <Legend />
+               </PieChart>
+           </ResponsiveContainer>
+       </div>
 
       <div style={{ marginTop: '30px' }}>
           <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px'}}><History /><h3 className="subtitulo" style={{margin: 0}}>HISTORIAL MENSUAL</h3></div>
