@@ -51,12 +51,18 @@ app.get('/api/inversiones', async (req, res) => {
 });
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
+        const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
-        const [invs, vts, clts] = await Promise.all([
-            db.collection('inversions').find({}).toArray(),
-            db.collection('ventas').find({}).toArray(),
-            db.collection('clientes').find({}).toArray()
-        ]);
+
+        // Filtros combinados
+        let queryInversiones = {};
+        if (producto) queryInversiones.nombre = producto; // Filtra por nombre exacto
+        if (desde || hasta) {
+            queryInversiones.fecha = {};
+            if (desde) queryInversiones.fecha.$gte = new Date(desde);
+            if (hasta) queryInversiones.fecha.$lte = new Date(hasta);
+        }
+        const invs = await db.collection('inversions').find(queryInversiones).toArray();
 
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);

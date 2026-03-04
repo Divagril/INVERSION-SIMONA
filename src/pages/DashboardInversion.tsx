@@ -8,6 +8,8 @@ const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
+  const [busqueda, setBusqueda] = useState({ desde: '', hasta: '', producto: '' });
+
 
   const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
@@ -15,7 +17,6 @@ const DashboardInversion: React.FC = () => {
 
   useEffect(() => {
     getRentabilidad(filtros).then(setStats);
-    getNombresInversiones().then(setNombresProductos); // Carga los nombres
   }, [filtros]);
   useEffect(() => {
     getRentabilidad(filtros).then(setStats).catch(() => console.log("Error al cargar"));
@@ -33,24 +34,21 @@ const DashboardInversion: React.FC = () => {
         <button className="btn-dashboard" onClick={() => navigate('/inversion')}><ArrowLeft /> VOLVER</button>
       </div>
 
-      <div className="tarjeta-blanca" style={{ marginTop: '30px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, desde: e.target.value})} />
-          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, hasta: e.target.value})} />
+      <div className="tarjeta-blanca" style={{ marginTop: '30px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
+          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
     
-          <div style={{ flex: 1, position: 'relative' }}>
-              <input 
-                  list="listaProductos" 
-                  className="campo-gigante" 
-                  style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%'}} 
-                  placeholder="Seleccionar Producto" 
-                  onChange={e => setFiltros({...filtros, producto: e.target.value})} 
-              />
+          <div style={{ flex: 1 }}>
+              <input list="listaProductos" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%'}} placeholder="Producto" onChange={e => setBusqueda({...busqueda, producto: e.target.value})} />
               <datalist id="listaProductos">
-                  {nombresProductos.map((nombre, index) => (
-                      <option key={index} value={nombre} />
-                  ))}
+                  {nombresProductos.map((nombre, index) => <option key={index} value={nombre} />)}
               </datalist>
           </div>
+
+          {/* BOTÓN DE FILTRAR */}
+          <button className="btn-dashboard" style={{padding: '10px 20px'}} onClick={() => setFiltros(busqueda)}>
+              FILTRAR
+          </button>
       </div>
 
       <div className="fila-indicadores" style={{marginTop: '30px'}}>
