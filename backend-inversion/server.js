@@ -100,6 +100,41 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
     }
 });
 
+app.get('/api/dashboard/rentabilidad', async (req, res) => {
+    try {
+        const { desde, hasta, producto } = req.query;
+        const db = mongoose.connection.db;
+
+        // Construir filtro para las consultas
+        let query = {};
+        if (desde || hasta) {
+            query.fecha = {};
+            if (desde) query.fecha.$gte = new Date(desde);
+            if (hasta) query.fecha.$lte = new Date(hasta);
+        }
+
+        const [invs, vts, clts] = await Promise.all([
+            db.collection('inversions').find(producto ? { nombre: producto } : query).toArray(),
+            db.collection('ventas').find(producto ? { "productos.nombre": producto } : query).toArray(),
+            db.collection('clientes').find({}).toArray()
+        ]);
+
+        // ... (resto de tus cálculos igual que antes)
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
+        const plataPorCobrar = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+
+        res.json({
+            inversionTotal: totalInversion,
+            ingresosTotalesVentas: totalVentas,
+            plataPorCobrar: plataPorCobrar,
+            dineroEnCaja: totalVentas - plataPorCobrar,
+            gananciaReal: (totalVentas - plataPorCobrar) - totalInversion
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
 app.get('/api/nombres-inversiones', async (req, res) => {
     try { res.json(await Inversion.distinct('nombre')); } catch (e) { res.json([]); }
 });
