@@ -94,9 +94,14 @@ app.delete('/api/inversiones/:id', async (req, res) => {
         res.json({ message: "Eliminado" });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
-
 app.get('/api/nombres-inversiones', async (req, res) => {
-    try { res.json(await Inversion.distinct('nombre')); } catch (e) { res.json([]); }
+    try {
+        // Asegúrate de usar la colección correcta 'inversions'
+        const nombres = await Inversion.distinct('nombre');
+        res.json(nombres);
+    } catch (e) { 
+        res.status(500).json([]); 
+    }
 });
 
 const PORT = process.env.PORT || 10000;

@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from 'react';
+import { getRentabilidad, getNombresInversiones } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { getRentabilidad, getNombresInversiones } from '../services/api';
 
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
-  const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
+  const [nombresProductos, setNombresProductos] = useState<string[]>([]);
   const [busqueda, setBusqueda] = useState({ desde: '', hasta: '', producto: '' });
-
+  const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
 
   const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
-  const [nombresProductos, setNombresProductos] = useState<string[]>([]);
+  // 1. Cargar productos al iniciar
+  useEffect(() => {
+    getNombresInversiones().then(setNombresProductos).catch(console.error);
+  }, []);
 
+  // 2. Cargar rentabilidad al cambiar filtros
   useEffect(() => {
-    getRentabilidad(filtros).then(setStats);
-  }, [filtros]);
-  useEffect(() => {
-    getRentabilidad(filtros).then(setStats).catch(() => console.log("Error al cargar"));
+    getRentabilidad(filtros).then(setStats).catch(console.error);
   }, [filtros]);
 
   if (!stats) return <div className="cargando">Cargando datos...</div>;
@@ -34,31 +35,20 @@ const DashboardInversion: React.FC = () => {
         <button className="btn-dashboard" onClick={() => navigate('/inversion')}><ArrowLeft /> VOLVER</button>
       </div>
 
+      {/* FILTROS */}
       <div className="tarjeta-blanca" style={{ marginTop: '30px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
-          <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
-    
-          <div style={{ flex: 1 }}>
-              <select 
-                  className="campo-gigante" 
-                  style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%', height: '55px'}} 
-                  onChange={e => setBusqueda({...busqueda, producto: e.target.value})}
-              >
-                  <option value="">-- SELECCIONE PRODUCTO --</option>
-                  {nombresProductos.map((nombre, index) => (
-                      <option key={index} value={nombre}>
-                          {nombre}
-                      </option>
-                  ))}
-              </select>
-          </div>
+        <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
+        <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
+        
+        <select className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1, height: '55px'}} onChange={e => setBusqueda({...busqueda, producto: e.target.value})}>
+            <option value="">-- SELECCIONE PRODUCTO --</option>
+            {nombresProductos.map((nombre, index) => <option key={index} value={nombre}>{nombre}</option>)}
+        </select>
 
-          {/* BOTÓN DE FILTRAR */}
-          <button className="btn-dashboard" style={{padding: '10px 20px'}} onClick={() => setFiltros(busqueda)}>
-              FILTRAR
-          </button>
+        <button className="btn-dashboard" style={{padding: '10px 20px', height: '55px'}} onClick={() => setFiltros(busqueda)}>FILTRAR</button>
       </div>
 
+      {/* INDICADORES */}
       <div className="fila-indicadores" style={{marginTop: '30px'}}>
         <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #f59e0b' }}>
           <span className="subtitulo">INVERSIÓN</span>
@@ -78,6 +68,7 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
+      {/* GRÁFICO */}
       <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '400px' }}>
         <h3 className="subtitulo">Distribución Financiera</h3>
         <ResponsiveContainer width="100%" height="90%">
@@ -88,29 +79,6 @@ const DashboardInversion: React.FC = () => {
             <Tooltip formatter={(v: any) => fMone(v)} /><Legend />
           </PieChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* AQUÍ ESTÁ TU TABLA DE REGRESO */}
-      <div style={{ marginTop: '30px' }}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px'}}><History /><h3 className="subtitulo" style={{margin: 0}}>HISTORIAL MENSUAL</h3></div>
-          <div className="tarjeta-blanca" style={{padding: 0, overflow: 'hidden'}}>
-              <table style={{width: '100%', borderCollapse: 'collapse'}}>
-                  <thead style={{background: '#f8fafc'}}>
-                      <tr>
-                          <th style={{padding: '15px', textAlign: 'left'}}>EFECTIVO EN CAJA</th>
-                          <th style={{padding: '15px'}}>FALTA COBRAR</th>
-                          <th style={{padding: '15px'}}>INVERSIÓN</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr style={{borderBottom: '1px solid #f1f5f9', textAlign: 'center'}}>
-                          <td style={{padding: '15px', color: '#166534', fontWeight: 'bold'}}>{fMone(stats.dineroEnCaja)}</td>
-                          <td style={{padding: '15px', color: '#ef4444'}}>{fMone(stats.plataPorCobrar)}</td>
-                          <td style={{padding: '15px'}}>{fMone(stats.inversionTotal)}</td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
       </div>
     </div>
   );
