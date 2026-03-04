@@ -31,6 +31,25 @@ app.post('/api/productos/inversion', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+app.get('/api/inversiones', async (req, res) => {
+    try {
+        const invs = await Inversion.find({});
+        // Normalizamos los datos antes de enviarlos al frontend
+        const invsNormalizadas = invs.map(i => ({
+            _id: i._id,
+            nombre: i.nombre,
+            formato_compra: i.formato_compra || i.formato || "N/A",
+            cantidad_formato: i.cantidad_formato || i.cantidadFormato || 0,
+            unidades_por_formato: i.unidades_por_formato || i.unidadesPorFormato || 1,
+            costo_total: i.costo_total || i.costoTotal || 0,
+            fecha: i.fecha || new Date()
+        }));
+        res.json(invsNormalizadas);
+    } catch (e) {
+        res.status(500).json([]);
+    }
+});
+
 
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
@@ -46,7 +65,7 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         console.log("INVERSIONES ENCONTRADAS:", invs.length);
         console.log("VENTAS ENCONTRADAS:", vts.length);
         console.log("CLIENTES ENCONTRADOS:", clts.length);
-        
+
         // 1. SUMAR INVERSIONES (campo: costo_total)
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || 0)), 0);
 
