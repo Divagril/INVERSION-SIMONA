@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { getRentabilidad, getNombresInversiones } from '../services/api';
+import { getRentabilidad } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
+import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
-  const [nombresFiltro, setNombresFiltro] = useState<string[]>([]);
-  const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
 
   const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
   useEffect(() => {
-    getRentabilidad(filtros).then(setStats).catch(() => console.log("Error de red"));
-    getNombresInversiones().then(setNombresFiltro);
-  }, [filtros]);
+    // Eliminamos el filtro por ahora ya que no se usaba en el cálculo
+    getRentabilidad().then(setStats).catch(() => console.log("Error de red"));
+  }, []);
 
   if (!stats) return <div className="cargando">Trayendo información de la base de datos...</div>;
 
@@ -59,7 +57,7 @@ const DashboardInversion: React.FC = () => {
           <AreaChart data={stats.grafico}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="name" />
-            <YAxis tickFormatter={(v) => `S/ ${v}`} />
+            <YAxis tickFormatter={(v: number) => `S/ ${v}`} />
             <Tooltip formatter={(v: any) => [fMone(v), ""]} />
             <Area type="monotone" dataKey="caja" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="Efectivo" />
             <Area type="monotone" dataKey="inversion" stroke="#f59e0b" fill="transparent" name="Inversión" />
