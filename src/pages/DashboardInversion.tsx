@@ -12,10 +12,10 @@ const DashboardInversion: React.FC = () => {
   const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
   useEffect(() => {
-    getRentabilidad(filtros).then(setStats).catch(() => console.log("Error de red"));
+    getRentabilidad(filtros).then(setStats).catch(() => console.log("Error al cargar"));
   }, [filtros]);
 
-  if (!stats) return <div className="cargando">Trayendo información de la base de datos...</div>;
+  if (!stats) return <div className="cargando">Cargando datos...</div>;
 
   return (
     <div className="pantalla-principal">
@@ -27,7 +27,6 @@ const DashboardInversion: React.FC = () => {
         <button className="btn-dashboard" onClick={() => navigate('/inversion')}><ArrowLeft /> VOLVER</button>
       </div>
 
-      {/* SECCIÓN DE FILTROS */}
       <div className="tarjeta-blanca" style={{ marginTop: '30px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
         <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, desde: e.target.value})} />
         <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setFiltros({...filtros, hasta: e.target.value})} />
@@ -60,8 +59,8 @@ const DashboardInversion: React.FC = () => {
             <Pie
               data={[
                 { name: 'Caja', value: stats.dineroEnCaja > 0 ? stats.dineroEnCaja : 0 },
-                { name: 'Fiados', value: stats.plataPorCobrar },
-                { name: 'Inversión', value: stats.inversionTotal }
+                { name: 'Fiados', value: stats.plataPorCobrar > 0 ? stats.plataPorCobrar : 0 },
+                { name: 'Inversión', value: stats.inversionTotal > 0 ? stats.inversionTotal : 0 }
               ]}
               innerRadius={80}
               outerRadius={120}
