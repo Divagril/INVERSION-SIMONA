@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getRentabilidad } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Wallet, HandCoins } from 'lucide-react';
+import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const DashboardInversion: React.FC = () => {
@@ -56,25 +56,35 @@ const DashboardInversion: React.FC = () => {
         <h3 className="subtitulo">Distribución Financiera</h3>
         <ResponsiveContainer width="100%" height="90%">
           <PieChart>
-            <Pie
-              data={[
-                { name: 'Caja', value: stats.dineroEnCaja > 0 ? stats.dineroEnCaja : 0 },
-                { name: 'Fiados', value: stats.plataPorCobrar > 0 ? stats.plataPorCobrar : 0 },
-                { name: 'Inversión', value: stats.inversionTotal > 0 ? stats.inversionTotal : 0 }
-              ]}
-              innerRadius={80}
-              outerRadius={120}
-              paddingAngle={5}
-              dataKey="value"
-            >
-              <Cell fill="#10b981" />
-              <Cell fill="#ef4444" />
-              <Cell fill="#f59e0b" />
+            <Pie data={[{name: 'Caja', value: stats.dineroEnCaja > 0 ? stats.dineroEnCaja : 0}, {name: 'Fiados', value: stats.plataPorCobrar}, {name: 'Inversión', value: stats.inversionTotal}]} innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value">
+              <Cell fill="#10b981" /><Cell fill="#ef4444" /><Cell fill="#f59e0b" />
             </Pie>
-            <Tooltip formatter={(v: any) => fMone(v)} />
-            <Legend />
+            <Tooltip formatter={(v: any) => fMone(v)} /><Legend />
           </PieChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* AQUÍ ESTÁ TU TABLA DE REGRESO */}
+      <div style={{ marginTop: '30px' }}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px'}}><History /><h3 className="subtitulo" style={{margin: 0}}>HISTORIAL MENSUAL</h3></div>
+          <div className="tarjeta-blanca" style={{padding: 0, overflow: 'hidden'}}>
+              <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                  <thead style={{background: '#f8fafc'}}>
+                      <tr>
+                          <th style={{padding: '15px', textAlign: 'left'}}>EFECTIVO EN CAJA</th>
+                          <th style={{padding: '15px'}}>FALTA COBRAR</th>
+                          <th style={{padding: '15px'}}>INVERSIÓN</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr style={{borderBottom: '1px solid #f1f5f9', textAlign: 'center'}}>
+                          <td style={{padding: '15px', color: '#166534', fontWeight: 'bold'}}>{fMone(stats.dineroEnCaja)}</td>
+                          <td style={{padding: '15px', color: '#ef4444'}}>{fMone(stats.plataPorCobrar)}</td>
+                          <td style={{padding: '15px'}}>{fMone(stats.inversionTotal)}</td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
       </div>
     </div>
   );
