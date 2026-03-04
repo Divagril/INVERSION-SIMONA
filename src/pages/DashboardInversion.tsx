@@ -39,10 +39,18 @@ const DashboardInversion: React.FC = () => {
           <input type="date" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', flex: 1}} onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
     
           <div style={{ flex: 1 }}>
-              <input list="listaProductos" className="campo-gigante" style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%'}} placeholder="Producto" onChange={e => setBusqueda({...busqueda, producto: e.target.value})} />
-              <datalist id="listaProductos">
-                  {nombresProductos.map((nombre, index) => <option key={index} value={nombre} />)}
-              </datalist>
+              <select 
+                  className="campo-gigante" 
+                  style={{marginBottom: 0, padding: '10px', fontSize: '16px', width: '100%', height: '55px'}} 
+                  onChange={e => setBusqueda({...busqueda, producto: e.target.value})}
+              >
+                  <option value="">-- SELECCIONE PRODUCTO --</option>
+                  {nombresProductos.map((nombre, index) => (
+                      <option key={index} value={nombre}>
+                          {nombre}
+                      </option>
+                  ))}
+              </select>
           </div>
 
           {/* BOTÓN DE FILTRAR */}
