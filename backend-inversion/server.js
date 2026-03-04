@@ -7,6 +7,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(cors({
+  origin: "*", // Permite conexiones desde cualquier parte
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://Flor:Hola20@cluster0.ja7oags.mongodb.net/sistema_pos_v5";
 
 mongoose.connect(MONGO_URI)
