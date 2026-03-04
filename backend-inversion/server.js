@@ -22,6 +22,16 @@ const Inversion = mongoose.model('Inversion', new mongoose.Schema({}, { strict: 
 const Venta = mongoose.model('Venta', new mongoose.Schema({}, { strict: false }), 'ventas');
 const Fiado = mongoose.model('Fiado', new mongoose.Schema({}, { strict: false }), 'movimientofiados');
 
+app.post('/api/productos/inversion', async (req, res) => {
+    try {
+        const inv = new Inversion(req.body); // Asegúrate de que el modelo 'Inversion' esté bien
+        await inv.save();
+        res.status(201).json(inv);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const db = mongoose.connection.db;
@@ -33,6 +43,10 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
 
         console.log(`Datos leídos -> Inversiones: ${invs.length}, Ventas: ${vts.length}, Clientes: ${clts.length}`);
 
+        console.log("INVERSIONES ENCONTRADAS:", invs.length);
+        console.log("VENTAS ENCONTRADAS:", vts.length);
+        console.log("CLIENTES ENCONTRADOS:", clts.length);
+        
         // 1. SUMAR INVERSIONES (campo: costo_total)
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || 0)), 0);
 
