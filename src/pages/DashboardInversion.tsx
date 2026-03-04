@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getRentabilidad } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
+import { ArrowLeft, BarChart3, Wallet, HandCoins } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const DashboardInversion: React.FC = () => {

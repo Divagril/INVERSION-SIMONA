@@ -99,6 +99,28 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+// EDITAR
+app.put('/api/inversiones/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updated = await Inversion.findByIdAndUpdate(id, req.body, { new: true });
+        res.json(updated);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ELIMINAR
+app.delete('/api/inversiones/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Inversion.findByIdAndDelete(id);
+        res.json({ message: "Eliminado" });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
