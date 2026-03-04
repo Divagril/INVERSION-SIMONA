@@ -1,233 +1,96 @@
 import React, { useEffect, useState } from 'react';
 import { getRentabilidad, getNombresInversiones } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  ArrowLeft, 
-  Filter, 
-  Calendar, 
-  BarChart3,
-  History
-} from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts';
+import { TrendingUp, ArrowLeft, BarChart3, Wallet, HandCoins, History } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DashboardInversion: React.FC = () => {
   const navigate = useNavigate();
-
-  // ESTADOS
   const [stats, setStats] = useState<any>(null);
   const [nombresFiltro, setNombresFiltro] = useState<string[]>([]);
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
-  const [error, setError] = useState(false);
 
-  // UTILIDAD: FORMATEAR MONEDA (S/. PEN)
-  const fMone = (n: any) => {
-    const num = Number(n) || 0;
-    return num.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
-  };
-
-  // CARGAR DATOS
-  const cargarTodo = async () => {
-    try {
-      setError(false);
-      const dataStats = await getRentabilidad(filtros);
-      if (dataStats) setStats(dataStats);
-
-      const nombres = await getNombresInversiones();
-      setNombresFiltro(nombres);
-
-    } catch (e) {
-      console.error("Error al cargar Dashboard:", e);
-      setError(true);
-    }
-  };
+  const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
 
   useEffect(() => {
-    cargarTodo();
+    getRentabilidad(filtros).then(setStats).catch(() => console.log("Error de red"));
+    getNombresInversiones().then(setNombresFiltro);
   }, [filtros]);
 
-  if (error) return <div className="cargando">⚠️ Error al conectar con el servidor.</div>;
-  if (!stats) return <div className="cargando">Generando reporte de rentabilidad...</div>;
+  if (!stats) return <div className="cargando">Trayendo información de la base de datos...</div>;
 
   return (
     <div className="pantalla-principal">
-      {/* CABECERA */}
       <div className="barra-titulo">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <BarChart3 size={40} />
-          <span>DASHBOARD ANALÍTICO</span>
+          <span>ESTADO FINANCIERO REAL</span>
         </div>
-        <button className="btn-dashboard" style={{ background: '#64748b' }} onClick={() => navigate('/inversion')}>
-          <ArrowLeft /> VOLVER AL REGISTRO
-        </button>
+        <button className="btn-dashboard" onClick={() => navigate('/inversion')}><ArrowLeft /> VOLVER</button>
       </div>
 
-      {/* PANEL DE FILTROS */}
-      <div className="tarjeta-blanca" style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <label className="subtitulo"><Filter size={14} /> Filtrar por Producto</label>
-          <select 
-            className="campo-gigante" 
-            style={{ fontSize: '16px', padding: '10px', marginBottom: '0' }} 
-            value={filtros.producto} 
-            onChange={e => setFiltros({ ...filtros, producto: e.target.value })}
-          >
-            <option value="">Todos los productos comprados</option>
-            {nombresFiltro.map((nom, i) => (
-              <option key={i} value={nom}>{nom}</option>
-            ))}
-          </select>
+      <div className="fila-indicadores" style={{marginTop: '30px'}}>
+        <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #f59e0b' }}>
+          <span className="subtitulo">INVERSIÓN TOTAL</span>
+          <span className="numero-grande color-naranja">{fMone(stats.inversionTotal)}</span>
+        </div>
+        
+        <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #10b981', background: '#f0fdf4' }}>
+          <span className="subtitulo" style={{color: '#166534'}}><Wallet size={16}/> EFECTIVO EN CAJA</span>
+          <span className="numero-gigante color-verde">{fMone(stats.dineroEnCaja)}</span>
+          <p style={{fontSize: '11px', color: '#166534'}}>Lo que ya cobraste y tienes en mano</p>
         </div>
 
-        <div style={{ minWidth: '150px' }}>
-          <label className="subtitulo"><Calendar size={14} /> Desde</label>
-          <input 
-            type="date" className="campo-gigante" 
-            style={{ fontSize: '16px', padding: '10px', marginBottom: '0' }} 
-            value={filtros.desde} 
-            onChange={e => setFiltros({ ...filtros, desde: e.target.value })} 
-          />
+        <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #ef4444', background: '#fef2f2' }}>
+          <span className="subtitulo" style={{color: '#991b1b'}}><HandCoins size={16}/> POR COBRAR (FIADOS)</span>
+          <span className="numero-gigante color-rojo">{fMone(stats.plataPorCobrar)}</span>
+          <p style={{fontSize: '11px', color: '#991b1b'}}>Deuda que falta cobrar a clientes</p>
         </div>
 
-        <div style={{ minWidth: '150px' }}>
-          <label className="subtitulo"><Calendar size={14} /> Hasta</label>
-          <input 
-            type="date" className="campo-gigante" 
-            style={{ fontSize: '16px', padding: '10px', marginBottom: '0' }} 
-            value={filtros.hasta} 
-            onChange={e => setFiltros({ ...filtros, hasta: e.target.value })} 
-          />
-        </div>
-
-        <button 
-          className="btn-dashboard" 
-          onClick={() => setFiltros({ desde: '', hasta: '', producto: '' })} 
-          style={{ background: '#94a3b8', height: '50px' }}
-        >
-          LIMPIAR
-        </button>
-      </div>
-
-      {/* INDICADORES (KPIs) */}
-      <div className="fila-indicadores">
-        <div className="tarjeta-blanca indicador">
-          <span className="subtitulo">Inversión Total</span>
-          <span className="numero-gigante color-naranja">{fMone(stats.inversionTotalEnVentas)}</span>
-        </div>
-
-        <div className="tarjeta-blanca indicador">
-          <span className="subtitulo">Ingresos Brutos</span>
-          <span className="numero-gigante color-azul">{fMone(stats.ingresosTotales)}</span>
-        </div>
-
-        <div className={`tarjeta-blanca indicador ${stats.gananciaNeta > 0 ? 'borde-verde' : (stats.gananciaNeta < 0 ? 'borde-rojo' : '')}`}>
-          <span className="subtitulo">Ganancia Neta</span>
-          <span className={`numero-gigante ${stats.gananciaNeta > 0 ? 'color-verde' : (stats.gananciaNeta < 0 ? 'color-rojo' : 'color-azul')}`}>
-            {fMone(stats.gananciaNeta)}
-          </span>
+        <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #3b82f6' }}>
+          <span className="subtitulo">GANANCIA REAL</span>
+          <span className={`numero-grande ${stats.gananciaReal >= 0 ? 'color-verde' : 'color-rojo'}`}>{fMone(stats.gananciaReal)}</span>
         </div>
       </div>
 
-      {/* GRÁFICO DE TENDENCIA */}
-      <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '450px', padding: '30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
-            <div style={{ background: '#eff6ff', padding: '10px', borderRadius: '12px' }}>
-                <TrendingUp size={24} color="#3b82f6" />
-            </div>
-            <div>
-                <h3 style={{ margin: 0, color: '#1e293b', fontSize: '20px', fontWeight: '800' }}>Balance de Crecimiento</h3>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Inversión vs Ventas por mes</p>
-            </div>
-        </div>
-
-        <ResponsiveContainer width="100%" height="80%">
-          <AreaChart data={stats.grafico} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorInversion" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 13, fontWeight: 'bold' }} dy={10} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(val) => `S/ ${val}`} />
-            <Tooltip contentStyle={{ borderRadius: '15px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '15px' }} formatter={(value: any) => [fMone(value), ""]} />
-            <Legend verticalAlign="top" align="right" height={40} iconType="circle" />
-            <Area type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorVentas)" name="Ventas" activeDot={{ r: 8, strokeWidth: 0 }} />
-            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" strokeWidth={4} fillOpacity={1} fill="url(#colorInversion)" name="Inversión" activeDot={{ r: 8, strokeWidth: 0 }} />
+      <div className="tarjeta-blanca" style={{ marginTop: '30px', height: '400px' }}>
+        <h3 className="subtitulo">Evolución: Inversión vs Caja</h3>
+        <ResponsiveContainer width="100%" height="90%">
+          <AreaChart data={stats.grafico}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="name" />
+            <YAxis tickFormatter={(v) => `S/ ${v}`} />
+            <Tooltip formatter={(v: any) => [fMone(v), ""]} />
+            <Area type="monotone" dataKey="caja" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="Efectivo" />
+            <Area type="monotone" dataKey="inversion" stroke="#f59e0b" fill="transparent" name="Inversión" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      {/* NUEVA TABLA: HISTORIAL DE RENDIMIENTO MENSUAL */}
-      <div style={{ marginTop: '40px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-          <History size={24} color="#1e293b" />
-          <h3 style={{ margin: 0, color: '#1e293b', fontSize: '20px', fontWeight: '800' }}>HISTORIAL MENSUAL</h3>
-      </div>
-
-      <div className="tarjeta-blanca" style={{ padding: '0', overflow: 'hidden' }}>
-        <div className="contenedor-tabla-scroll">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '20px', textAlign: 'left', color: '#64748b', fontSize: '13px' }}>MES / FECHA</th>
-                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>INVERSIÓN TOTAL</th>
-                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>INGRESOS BRUTOS</th>
-                <th style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>GANANCIA NETA</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.grafico && stats.grafico.length > 0 ? (
-                stats.grafico.map((row: any, i: number) => {
-                  const gananciaRow = row.ventas - row.inversion;
-                  return (
-                    <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '20px', fontWeight: 'bold', color: '#1e293b', textTransform: 'capitalize' }}>
-                        {row.name}
-                      </td>
-                      <td style={{ padding: '20px', textAlign: 'center', color: '#f59e0b', fontWeight: 'bold' }}>
-                        {fMone(row.inversion)}
-                      </td>
-                      <td style={{ padding: '20px', textAlign: 'center', color: '#3b82f6', fontWeight: 'bold' }}>
-                        {fMone(row.ventas)}
-                      </td>
-                      <td style={{ padding: '20px', textAlign: 'center' }}>
-                        <span style={{
-                          padding: '6px 15px', borderRadius: '10px',
-                          background: gananciaRow >= 0 ? '#dcfce7' : '#fee2e2',
-                          color: gananciaRow >= 0 ? '#166534' : '#991b1b',
-                          fontWeight: '900',
-                          fontSize: '15px'
-                        }}>
-                          {fMone(gananciaRow)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={4} style={{ padding: '30px', textAlign: 'center', color: '#94a3b8' }}>
-                    No hay datos históricos disponibles aún.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div style={{ marginTop: '30px' }}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px'}}><History /><h3 className="subtitulo" style={{margin: 0}}>HISTORIAL MENSUAL</h3></div>
+          <div className="tarjeta-blanca" style={{padding: 0, overflow: 'hidden'}}>
+              <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                  <thead style={{background: '#f8fafc'}}>
+                      <tr>
+                          <th style={{padding: '15px', textAlign: 'left'}}>MES</th>
+                          <th style={{padding: '15px'}}>EFECTIVO EN CAJA</th>
+                          <th style={{padding: '15px'}}>FALTA COBRAR</th>
+                          <th style={{padding: '15px'}}>INVERSIÓN</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {stats.grafico.map((row: any, i: number) => (
+                          <tr key={i} style={{borderBottom: '1px solid #f1f5f9', textAlign: 'center'}}>
+                              <td style={{padding: '15px', textAlign: 'left', fontWeight: 'bold', textTransform: 'capitalize'}}>{row.name}</td>
+                              <td style={{padding: '15px', color: '#166534', fontWeight: 'bold'}}>{fMone(row.ventas - stats.plataPorCobrar)}</td>
+                              <td style={{padding: '15px', color: '#ef4444'}}>{fMone(stats.plataPorCobrar)}</td>
+                              <td style={{padding: '15px'}}>{fMone(row.inversion)}</td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+          </div>
       </div>
     </div>
   );

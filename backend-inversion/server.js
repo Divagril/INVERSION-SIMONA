@@ -4,134 +4,62 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-
-// --- CONFIGURACIÓN DE CORS (Solo una vez) ---
-app.use(cors({
-  origin: ['https://inversion-simona.onrender.com', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 
-// --- CONEXIÓN A MONGODB ---
-mongoose.connect(process.env.MONGO_URI || process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Conectado"))
-    .catch(err => console.error("❌ Error de conexión MongoDB:", err));
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://Flor:Hola20@cluster0.ja7oags.mongodb.net/sistema_pos_v5";
 
-// --- MODELOS ---
-const Inversion = mongoose.model('Inversion', new mongoose.Schema({
-    nombre: String,
-    formato_compra: String,
-    cantidad_formato: Number,
-    unidades_por_formato: Number,
-    costo_total: Number,
-    total_unidades_compradas: Number,
-    fecha: { type: Date, default: Date.now }
-}), 'inversions');
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("✅ Conectado a sistema_pos_v5"))
+    .catch(err => console.error("❌ Error Mongo:", err));
 
-const Venta = mongoose.model('Venta', new mongoose.Schema({
-    total: Number,
-    productos: Array,
-    fecha: { type: Date, default: Date.now }
-}), 'ventas');
+// Modelos ultra-flexibles (leen cualquier campo)
+const Inversion = mongoose.model('Inversion', new mongoose.Schema({}, { strict: false }), 'inversions');
+const Venta = mongoose.model('Venta', new mongoose.Schema({}, { strict: false }), 'ventas');
+const Fiado = mongoose.model('Fiado', new mongoose.Schema({}, { strict: false }), 'movimientofiados');
 
-const Producto = mongoose.model('Producto', new mongoose.Schema({
-    nombre: String, precio: Number, precio_compra: Number, cantidad: Number, unidad: String
-}), 'productos');
-
-// --- RUTAS ---
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
-        const { desde, hasta, producto } = req.query;
-        let filtro = {};
-        if (desde && hasta) filtro.fecha = { $gte: new Date(desde), $lte: new Date(hasta) };
-        if (producto) filtro.nombre = new RegExp(producto, 'i');
+        const db = mongoose.connection.db;
 
-        const [inversiones, ventas] = await Promise.all([
-            Inversion.find(filtro),
-            Venta.find(desde && hasta ? { fecha: filtro.fecha } : {})
-        ]);
+        // Leemos las colecciones forzando el nombre exacto de tu DB (sistema_pos_v5)
+        const invs = await db.collection('inversions').find({}).toArray();
+        const vts = await db.collection('ventas').find({}).toArray();
+        const clts = await db.collection('clientes').find({}).toArray();
 
-        const inversionTotal = inversiones.reduce((acc, inv) => acc + (Number(inv.costo_total) || 0), 0);
-        const ingresosTotales = ventas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
-        const gananciaNeta = ingresosTotales > 0 ? ingresosTotales - inversionTotal : 0;
+        console.log(`Datos leídos -> Inversiones: ${invs.length}, Ventas: ${vts.length}, Clientes: ${clts.length}`);
 
-        const datosGrafico = inversiones.reduce((acc, inv) => {
-            const mes = new Date(inv.fecha).toLocaleString('es-ES', { month: 'short' });
-            if (!acc[mes]) acc[mes] = { name: mes, inversion: 0, ventas: 0 };
-            acc[mes].inversion += inv.costo_total;
-            return acc;
-        }, {});
+        // 1. SUMAR INVERSIONES (campo: costo_total)
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || 0)), 0);
 
-        ventas.forEach(v => {
-            const mes = new Date(v.fecha).toLocaleString('es-ES', { month: 'short' });
-            if (!datosGrafico[mes]) datosGrafico[mes] = { name: mes, inversion: 0, ventas: 0 };
-            datosGrafico[mes].ventas += v.total;
-        });
+        // 2. SUMAR VENTAS (campo: total)
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
+
+        // 3. SUMAR DEUDAS (campo: deudaTotal)
+        const plataPorCobrar = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+
+        // 4. CÁLCULOS
+        const dineroEnCaja = totalVentas - plataPorCobrar;
+        const gananciaReal = dineroEnCaja - totalInversion;
 
         res.json({
-            inversionTotalEnVentas: inversionTotal,
-            ingresosTotales: ingresosTotales,
-            gananciaNeta: gananciaNeta,
-            grafico: Object.values(datosGrafico)
+            inversionTotal: totalInversion,
+            ingresosTotalesVentas: totalVentas,
+            plataPorCobrar: plataPorCobrar,
+            dineroEnCaja: dineroEnCaja,
+            gananciaReal: gananciaReal,
+            grafico: [] // Por ahora vacío para probar que los números aparezcan
         });
+
     } catch (e) {
+        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
-});
-
-app.get('/api/inversiones', async (req, res) => {
-    const list = await Inversion.find().sort({ fecha: -1 });
-    res.json(list);
-});
-
-app.post('/api/productos/inversion', async (req, res) => {
-    try {
-        const { nombre, formato, cantidadFormato, unidadesPorFormato, costoTotal } = req.body;
-        const nueva = new Inversion({
-            nombre, formato_compra: formato, cantidad_formato: cantidadFormato,
-            unidades_por_formato: unidadesPorFormato, costo_total: costoTotal,
-            total_unidades_compradas: Number(cantidadFormato) * Number(unidadesPorFormato)
-        });
-        await nueva.save();
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.put('/api/inversiones/:id', async (req, res) => {
-    try {
-        const { nombre, formato, cantidadFormato, unidadesPorFormato, costoTotal } = req.body;
-        await Inversion.findByIdAndUpdate(req.params.id, {
-            nombre, formato_compra: formato, cantidad_formato: cantidadFormato,
-            unidades_por_formato: unidadesPorFormato, costo_total: costoTotal,
-            total_unidades_compradas: Number(cantidadFormato) * Number(unidadesPorFormato)
-        });
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.delete('/api/inversiones/:id', async (req, res) => {
-    try {
-        await Inversion.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/productos', async (req, res) => {
-    const prods = await Producto.find().sort({ nombre: 1 });
-    res.json(prods);
 });
 
 app.get('/api/nombres-inversiones', async (req, res) => {
-    try {
-        const nombres = await Inversion.distinct('nombre');
-        res.json(nombres);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+    try { res.json(await Inversion.distinct('nombre')); } catch (e) { res.json([]); }
 });
 
-// --- INICIO DEL SERVIDOR (PUERTO DINÁMICO) ---
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Servidor en puerto ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Puerto: ${PORT}`));
