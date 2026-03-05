@@ -45,12 +45,10 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
     try {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
-
-        // 1. Filtrado de Inversiones: busca por el campo 'nombre'
+        console.log("Filtros recibidos:", { desde, hasta, producto });
         let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
+
         
-        // 2. Filtrado de Ventas: busca en el array 'productos' (campo 'nombre_producto' que vi en kardexes/ventas)
-        // Nota: Según tus capturas, en ventas los productos están en un array.
         let queryVts = producto ? { "productos.nombre_producto": { $regex: new RegExp(producto, 'i') } } : {};
 
         if (desde || hasta) {
@@ -105,7 +103,8 @@ app.get('/api/nombres-inversiones', async (req, res) => {
         const nombres = await Inversion.distinct('nombre');
         res.json(nombres);
     } catch (e) { 
-        res.status(500).json([]); 
+        console.log(e); 
+        res.status(500).json({ error: e.message })
     }
 });
 
