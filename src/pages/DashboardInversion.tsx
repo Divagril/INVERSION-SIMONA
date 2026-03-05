@@ -10,8 +10,8 @@ const DashboardInversion: React.FC = () => {
   const [nombresProductos, setNombresProductos] = useState<string[]>([]);
   const [busqueda, setBusqueda] = useState({ desde: '', hasta: '', producto: '' });
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
-
-  const fMone = (n: any) => (Number(n) || 0).toLocaleString('es-PE', { style: 'currency', currency: 'PEN' });
+  const fMone = (n: any) => {
+  const num = Number(n) || 0;return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(num);};
 
   // 1. Cargar productos al iniciar
   useEffect(() => {
@@ -65,7 +65,8 @@ const DashboardInversion: React.FC = () => {
         </div>
         <div className="tarjeta-blanca indicador" style={{ borderTop: '8px solid #3b82f6' }}>
           <span className="subtitulo">GANANCIA</span>
-          <span className={`numero-grande ${stats.gananciaReal >= 0 ? 'color-verde' : 'color-rojo'}`}>{fMone(stats.gananciaReal)}</span>
+          <span className={`numero-grande ${stats.gananciaReal >= 0 ? 'color-verde' : 'color-rojo'}`}>{fMone(stats.gananciaReal)}
+          </span>
         </div>
       </div>
 

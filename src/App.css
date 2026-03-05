@@ -101,6 +101,7 @@ body, html, #root {
 .indicador {
   flex: 1;
   text-align: center;
+  min-width: 150px; 
 }
 
 .subtitulo {
@@ -116,10 +117,11 @@ body, html, #root {
   font-size: 60px;
   font-weight: 900;
 }
-
 .numero-grande {
-  font-size: 45px;
+  font-size: 32px; /* Reducido de 45px para evitar saltos de línea */
   font-weight: 800;
+  display: block;
+  word-break: break-all; /* Asegura que no se distorsione el contenedor */
 }
 
 /* --- COLORES --- */
