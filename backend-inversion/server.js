@@ -46,9 +46,14 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
 
-        // Filtros para ventas y inversiones
-        let queryInv = producto ? { nombre: producto } : {};
-        let queryVts = producto ? { "productos.nombre": producto } : {};
+        // FILTRO MEJORADO: Usamos 'i' para que no distinga entre mayúsculas y minúsculas
+        // y usamos $regex para buscar aunque el nombre no sea exacto
+        let queryInv = producto ? { nombre: { $regex: producto, $options: 'i' } } : {};
+        let queryVts = producto ? { "productos.nombre_producto": { $regex: producto, $options: 'i' } } : {}; 
+        
+        // ¡OJO! Revisa si en tu colección de ventas el campo es "productos.nombre" o "productos.nombre_producto"
+        // Según tus capturas anteriores, en kardexes usas "nombre_producto". Prueba cambiarlo ahí.
+
         if (desde || hasta) {
             const f = {};
             if (desde) f.$gte = new Date(desde);
@@ -63,27 +68,19 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             db.collection('clientes').find({}).toArray()
         ]);
 
-        // 1. Inversión total (siempre se resta)
+        console.log("Filtro aplicado:", producto);
+        console.log("Inversiones encontradas:", invs.length);
+
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
-
-        // 2. Separar ventas: Efectivo vs Fiado
-        // Solo sumamos a "Caja" lo que tiene metodoPago: "EFECTIVO" (o lo que no sea FIADO)
-        const totalEnCaja = vts
-            .filter(v => v.metodoPago !== "FIADO")
-            .reduce((acc, v) => acc + (Number(v.total || 0)), 0);
-
-        // 3. Fiados (la suma total de deudas en clientes)
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
-
-        // 4. GANANCIA REAL: Solo lo que ya entró a caja menos lo invertido
-        const gananciaReal = totalEnCaja - totalInversion;
 
         res.json({
             inversionTotal: totalInversion,
-            ingresosTotalesVentas: totalEnCaja + totalFiados, // Total vendido
-            plataPorCobrar: totalFiados, // Lo que está en la calle
-            dineroEnCaja: totalEnCaja, // Lo que realmente tienes
-            gananciaReal: gananciaReal // Ganancia basada en efectivo real
+            ingresosTotalesVentas: totalVentas,
+            plataPorCobrar: totalFiados,
+            dineroEnCaja: totalVentas - totalFiados,
+            gananciaReal: (totalVentas - totalFiados) - totalInversion
         });
 
     } catch (e) {
