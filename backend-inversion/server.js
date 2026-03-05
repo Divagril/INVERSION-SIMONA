@@ -46,13 +46,12 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
 
-        // FILTRO MEJORADO: Usamos 'i' para que no distinga entre mayúsculas y minúsculas
-        // y usamos $regex para buscar aunque el nombre no sea exacto
-        let queryInv = producto ? { nombre: { $regex: producto, $options: 'i' } } : {};
-        let queryVts = producto ? { "productos.nombre_producto": { $regex: producto, $options: 'i' } } : {}; 
+        // 1. Filtrado de Inversiones: busca por el campo 'nombre'
+        let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
         
-        // ¡OJO! Revisa si en tu colección de ventas el campo es "productos.nombre" o "productos.nombre_producto"
-        // Según tus capturas anteriores, en kardexes usas "nombre_producto". Prueba cambiarlo ahí.
+        // 2. Filtrado de Ventas: busca en el array 'productos' (campo 'nombre_producto' que vi en kardexes/ventas)
+        // Nota: Según tus capturas, en ventas los productos están en un array.
+        let queryVts = producto ? { "productos.nombre_producto": { $regex: new RegExp(producto, 'i') } } : {};
 
         if (desde || hasta) {
             const f = {};
@@ -68,10 +67,8 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             db.collection('clientes').find({}).toArray()
         ]);
 
-        console.log("Filtro aplicado:", producto);
-        console.log("Inversiones encontradas:", invs.length);
-
-        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costo_total || i.costoTotal || 0)), 0);
+        // Cálculo con los datos encontrados
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
@@ -84,6 +81,7 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         });
 
     } catch (e) {
+        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
 });
