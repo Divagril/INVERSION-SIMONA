@@ -41,14 +41,33 @@ app.get('/api/inversiones', async (req, res) => {
     } catch (e) { res.status(500).json([]); }
 });
 
+export const getRentabilidad = async (filtros: any = {}) => {
+    const paramsObj = {
+        ...filtros,
+        t: Date.now().toString()
+    };
+    
+    const params = new URLSearchParams(paramsObj).toString();
+    const res = await axios.get(`${API_URL}/dashboard/rentabilidad?${params}`);
+    return res.data;
+};
+
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
+    // 1. Cabeceras para evitar caché (obligan al navegador a pedir datos frescos siempre)
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     try {
         const { desde, hasta, producto } = req.query;
         const db = mongoose.connection.db;
-        console.log("Filtros recibidos:", { desde, hasta, producto });
-        let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
 
+        // 2. Lógica de filtrado
+        // Buscamos en el nombre del producto (usamos regex para búsqueda parcial)
+        let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
         
+        // Ajuste: Verifica si en tu BD el campo se llama 'productos.nombre_producto' 
+        // o si es simplemente 'productos.nombre'. Si no filtra, cambia este campo.
         let queryVts = producto ? { "productos.nombre_producto": { $regex: new RegExp(producto, 'i') } } : {};
 
         if (desde || hasta) {
@@ -59,17 +78,19 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
+        // 3. Ejecución de consultas en paralelo
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray(),
             db.collection('ventas').find(queryVts).toArray(),
             db.collection('clientes').find({}).toArray()
         ]);
 
-        // Cálculo con los datos encontrados
+        // 4. Cálculo de totales
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
         const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
+        // 5. Respuesta
         res.json({
             inversionTotal: totalInversion,
             ingresosTotalesVentas: totalVentas,
