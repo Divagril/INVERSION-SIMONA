@@ -47,7 +47,6 @@ app.get('/api/inversiones', async (req, res) => {
         res.json(datosNormalizados);
     } catch (e) { res.status(500).json([]); }
 });
-
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     
@@ -96,7 +95,6 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
-
 app.put('/api/inversiones/:id', async (req, res) => {
     try {
         const updated = await Inversion.findByIdAndUpdate(req.params.id, req.body, { new: true });
