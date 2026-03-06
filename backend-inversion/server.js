@@ -47,19 +47,24 @@ app.get('/api/inversiones', async (req, res) => {
         res.json(datosNormalizados);
     } catch (e) { res.status(500).json([]); }
 });
+
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
+    // 1. Cabeceras para evitar caché
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     try {
-        const { desde, hasta, producto } = req.query;
-        
-        // CORRECCIÓN: Definimos db aquí dentro de forma segura
+        // 2. Obtener la conexión a la base de datos de forma local y segura
         const db = mongoose.connection.db;
 
         if (!db) {
-            return res.status(500).json({ error: "Base de datos no disponible aún" });
+            return res.status(503).json({ error: "Base de datos no conectada todavía" });
         }
 
+        const { desde, hasta, producto } = req.query;
+
+        // 3. Configurar filtros
         let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
         let queryVts = producto ? { "productos.nombre_producto": { $regex: new RegExp(producto, 'i') } } : {};
 
@@ -71,17 +76,19 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
-        // Ejecutamos consultas
+        // 4. Ejecutar consultas en paralelo con manejo de errores interno
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray().catch(() => []),
             db.collection('ventas').find(queryVts).toArray().catch(() => []),
             db.collection('clientes').find({}).toArray().catch(() => [])
         ]);
 
-        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
-        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
-        const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+        // 5. Cálculos seguros
+        const totalInversion = (invs || []).reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
+        const totalVentas = (vts || []).reduce((acc, v) => acc + (Number(v.total || 0)), 0);
+        const totalFiados = (clts || []).reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
+        // 6. Enviar respuesta
         res.json({
             inversionTotal: totalInversion,
             ingresosTotalesVentas: totalVentas,
@@ -91,10 +98,11 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         });
 
     } catch (e) {
-        console.error("Error:", e);
+        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
 });
+
 app.put('/api/inversiones/:id', async (req, res) => {
     try {
         const updated = await Inversion.findByIdAndUpdate(req.params.id, req.body, { new: true });
