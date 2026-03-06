@@ -47,18 +47,18 @@ app.get('/api/inversiones', async (req, res) => {
         res.json(datosNormalizados);
     } catch (e) { res.status(500).json([]); }
 });
+
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-
+    
     try {
         const { desde, hasta, producto } = req.query;
+        
+        // CORRECCIÓN: Definimos db aquí dentro de forma segura
         const db = mongoose.connection.db;
 
-        // Validación: Si la DB no está lista, no intentamos hacer nada
         if (!db) {
-            return res.status(503).json({ error: "Base de datos conectando, por favor intenta en unos segundos" });
+            return res.status(500).json({ error: "Base de datos no disponible aún" });
         }
 
         let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
@@ -72,17 +72,16 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
-        // Ejecución en paralelo con .catch(() => []) para evitar que el servidor se caiga si falla una colección
+        // Ejecutamos consultas
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray().catch(() => []),
             db.collection('ventas').find(queryVts).toArray().catch(() => []),
             db.collection('clientes').find({}).toArray().catch(() => [])
         ]);
 
-        // Cálculo seguro usando el operador lógico || 0 para evitar errores si no hay datos
-        const totalInversion = (invs || []).reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
-        const totalVentas = (vts || []).reduce((acc, v) => acc + (Number(v.total || 0)), 0);
-        const totalFiados = (clts || []).reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
+        const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
         res.json({
             inversionTotal: totalInversion,
@@ -93,7 +92,7 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         });
 
     } catch (e) {
-        console.error("Error en Dashboard:", e);
+        console.error("Error:", e);
         res.status(500).json({ error: e.message });
     }
 });
