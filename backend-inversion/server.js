@@ -41,16 +41,7 @@ app.get('/api/inversiones', async (req, res) => {
     } catch (e) { res.status(500).json([]); }
 });
 
-export const getRentabilidad = async (filtros: any = {}) => {
-    const paramsObj = {
-        ...filtros,
-        t: Date.now().toString()
-    };
-    
-    const params = new URLSearchParams(paramsObj).toString();
-    const res = await axios.get(`${API_URL}/dashboard/rentabilidad?${params}`);
-    return res.data;
-};
+// RUTA DE RENTABILIDAD (Backend puro)
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.set('Pragma', 'no-cache');
@@ -88,7 +79,6 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             dineroEnCaja: totalVentas - totalFiados,
             gananciaReal: (totalVentas - totalFiados) - totalInversion
         });
-
     } catch (e) {
         console.error("Error:", e);
         res.status(500).json({ error: e.message });
@@ -108,14 +98,13 @@ app.delete('/api/inversiones/:id', async (req, res) => {
         res.json({ message: "Eliminado" });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
 app.get('/api/nombres-inversiones', async (req, res) => {
     try {
-        // Asegúrate de usar la colección correcta 'inversions'
         const nombres = await Inversion.distinct('nombre');
         res.json(nombres);
     } catch (e) { 
-        console.log(e); 
-        res.status(500).json({ error: e.message })
+        res.status(500).json({ error: e.message });
     }
 });
 

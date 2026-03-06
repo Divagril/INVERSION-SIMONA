@@ -8,12 +8,21 @@ export const actualizarInversion = (id: string, d: any) => axios.put(`${API_URL}
 export const eliminarInversion = (id: string) => axios.delete(`${API_URL}/inversiones/${id}`);
 export const getProductos = () => axios.get(`${API_URL}/productos`).then(r => r.data);
 
-export const getRentabilidad = async (filtros: any = {}) => {
+interface FiltrosRentabilidad {
+  desde?: string;
+  hasta?: string;
+  producto?: string;
+  [key: string]: any; // Permite cualquier otra propiedad dinámica
+}
+
+export const getRentabilidad = async (filtros: FiltrosRentabilidad = {}) => {
     const paramsObj = {
         ...filtros,
         t: Date.now().toString()
     };
-    const params = new URLSearchParams(paramsObj).toString();
+    
+    // URLSearchParams acepta un objeto, TypeScript lo validará bien aquí
+    const params = new URLSearchParams(paramsObj as Record<string, string>).toString();
     const res = await axios.get(`${API_URL}/dashboard/rentabilidad?${params}`);
     return res.data;
 };
