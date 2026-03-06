@@ -15,6 +15,12 @@ mongoose.connect(MONGO_URI)
 
 const Inversion = mongoose.model('Inversion', new mongoose.Schema({}, { strict: false }), 'inversions');
 
+const [invs = [], vts = [], clts = []] = await Promise.all([
+    db.collection('inversions').find(queryInv).toArray().catch(() => []),
+    db.collection('ventas').find(queryVts).toArray().catch(() => []),
+    db.collection('clientes').find({}).toArray().catch(() => [])
+]);
+
 // --- RUTAS ---
 
 app.post('/api/productos/inversion', async (req, res) => {
