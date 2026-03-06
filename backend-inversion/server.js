@@ -1,8 +1,7 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import dotenv from 'dotenv';
-dotenv.config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
@@ -14,16 +13,12 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ Conectado a sistema_pos_v5"))
     .catch(err => console.error("❌ Error Mongo:", err));
 
+// Definición del Modelo
 const Inversion = mongoose.model('Inversion', new mongoose.Schema({}, { strict: false }), 'inversions');
-
-const [invs = [], vts = [], clts = []] = await Promise.all([
-    db.collection('inversions').find(queryInv).toArray().catch(() => []),
-    db.collection('ventas').find(queryVts).toArray().catch(() => []),
-    db.collection('clientes').find({}).toArray().catch(() => [])
-]);
 
 // --- RUTAS ---
 
+// 1. Guardar Inversión
 app.post('/api/productos/inversion', async (req, res) => {
     try {
         const inv = new Inversion(req.body);
@@ -32,6 +27,7 @@ app.post('/api/productos/inversion', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 2. Obtener Historial de Inversiones
 app.get('/api/inversiones', async (req, res) => {
     try {
         const invs = await Inversion.find({});
@@ -48,23 +44,15 @@ app.get('/api/inversiones', async (req, res) => {
     } catch (e) { res.status(500).json([]); }
 });
 
+// 3. Dashboard de Rentabilidad (CORREGIDO)
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
-    // 1. Cabeceras para evitar caché
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-
     try {
-        // 2. Obtener la conexión a la base de datos de forma local y segura
         const db = mongoose.connection.db;
-
-        if (!db) {
-            return res.status(503).json({ error: "Base de datos no conectada todavía" });
-        }
+        if (!db) return res.status(503).json({ error: "Conectando a BD..." });
 
         const { desde, hasta, producto } = req.query;
 
-        // 3. Configurar filtros
         let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
         let queryVts = producto ? { "productos.nombre_producto": { $regex: new RegExp(producto, 'i') } } : {};
 
@@ -76,19 +64,16 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
-        // 4. Ejecutar consultas en paralelo con manejo de errores interno
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray().catch(() => []),
             db.collection('ventas').find(queryVts).toArray().catch(() => []),
             db.collection('clientes').find({}).toArray().catch(() => [])
         ]);
 
-        // 5. Cálculos seguros
-        const totalInversion = (invs || []).reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
-        const totalVentas = (vts || []).reduce((acc, v) => acc + (Number(v.total || 0)), 0);
-        const totalFiados = (clts || []).reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
+        const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
-        // 6. Enviar respuesta
         res.json({
             inversionTotal: totalInversion,
             ingresosTotalesVentas: totalVentas,
@@ -96,13 +81,12 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             dineroEnCaja: totalVentas - totalFiados,
             gananciaReal: (totalVentas - totalFiados) - totalInversion
         });
-
     } catch (e) {
-        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
 });
 
+// 4. Actualizar Inversión
 app.put('/api/inversiones/:id', async (req, res) => {
     try {
         const updated = await Inversion.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -110,6 +94,7 @@ app.put('/api/inversiones/:id', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 5. Eliminar Inversión
 app.delete('/api/inversiones/:id', async (req, res) => {
     try {
         await Inversion.findByIdAndDelete(req.params.id);
@@ -117,13 +102,12 @@ app.delete('/api/inversiones/:id', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 6. Nombres para Filtros
 app.get('/api/nombres-inversiones', async (req, res) => {
     try {
         const nombres = await Inversion.distinct('nombre');
         res.json(nombres);
-    } catch (e) { 
-        res.status(500).json({ error: e.message });
-    }
+    } catch (e) { res.status(500).json([]); }
 });
 
 const PORT = process.env.PORT || 10000;
