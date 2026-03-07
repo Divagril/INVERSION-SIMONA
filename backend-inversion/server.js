@@ -51,24 +51,19 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
 
         const { desde, hasta, producto } = req.query;
 
-        // Filtro para Inversiones
         let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
-
-        // Filtro para Ventas (Busca en varios nombres de campos comunes)
-        let queryVts = {};
-        if (producto) {
-            queryVts = {
-                "productos": {
-                    $elemMatch: {
-                        $or: [
-                            { "nombre_producto": { $regex: new RegExp(producto, 'i') } },
-                            { "nombre": { $regex: new RegExp(producto, 'i') } },
-                            { "producto": { $regex: new RegExp(producto, 'i') } }
-                        ]
-                    }
-                }
-            };
-        }
+        
+        // Esta es la query que busca dentro del array de productos de la venta
+        let queryVts = producto ? { 
+            "productos": { 
+                $elemMatch: { 
+                    $or: [
+                        { "nombre_producto": { $regex: new RegExp(producto, 'i') } },
+                        { "nombre": { $regex: new RegExp(producto, 'i') } }
+                    ] 
+                } 
+            } 
+        } : {};
 
         if (desde || hasta) {
             const f = {};
@@ -86,21 +81,8 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
 
         const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
         
-        // Sumar solo los productos que coinciden con la búsqueda dentro de las ventas
-        const totalVentas = vts.reduce((acc, v) => {
-            if (producto) {
-                // Si hay filtro, solo sumamos el subtotal de los productos que coinciden
-                const subtotalCoincidente = v.productos
-                    .filter(p => 
-                        (p.nombre_producto && new RegExp(producto, 'i').test(p.nombre_producto)) || 
-                        (p.nombre && new RegExp(producto, 'i').test(p.nombre))
-                    )
-                    .reduce((sum, p) => sum + (Number(p.subtotal || p.precio_total || 0)), 0);
-                return acc + subtotalCoincidente;
-            }
-            return acc + (Number(v.total || 0));
-        }, 0);
-
+        // Sumamos las ventas encontradas
+        const totalVentas = vts.reduce((acc, v) => acc + (Number(v.total || 0)), 0);
         const totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
 
         res.json({
@@ -111,7 +93,6 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             gananciaReal: (totalVentas - totalFiados) - totalInversion
         });
     } catch (e) {
-        console.error(e);
         res.status(500).json({ error: e.message });
     }
 });
