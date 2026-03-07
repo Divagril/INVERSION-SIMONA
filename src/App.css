@@ -1,522 +1,173 @@
-/* --- RESET GENERAL --- */
+/* --- 1. RESET Y BASE --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body, html, #root {
-  width: 100%;
-  min-height: 100vh;
+body {
   background-color: #f0f2f5;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+  overflow-x: hidden;
 }
 
-/* --- CONTENEDOR PRINCIPAL --- */
-.pantalla-principal {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-/* --- HEADER / TITULO --- */
-.barra-titulo {
+/* --- 2. HEADER (BARRA OSCURA) --- */
+.barra-titulo-dark {
   background: #1e293b;
   color: white;
-  padding: 30px;
-  border-radius: 20px;
+  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-bottom: 4px solid #3b82f6;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.barra-titulo span {
-  font-size: 35px;
+.titulo-texto {
+  font-size: 24px;
   font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-transform: uppercase;
 }
 
-/* --- BOTONES --- */
+.btn-volver {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.btn-volver:hover { background: #2563eb; }
+
+/* --- 3. CONTENEDORES --- */
+.pantalla-principal {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.contenedor-filtros {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+/* --- 4. INPUTS Y BOTONES --- */
+.fila-inputs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.input-filtro {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+.input-filtro:focus { border-color: #3b82f6; }
+
 .btn-dashboard {
   background: #3b82f6;
   color: white;
   border: none;
-  padding: 15px 25px;
-  border-radius: 12px;
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 800;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: bold;
   font-size: 16px;
+}
+
+/* --- 5. GRID DE INDICADORES (TARJETAS) --- */
+.grid-indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card-pos {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   transition: 0.3s;
 }
 
-.btn-dashboard:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-}
+/* Colores de las tarjetas */
+.borde-naranja { border-top: 8px solid #f59e0b; }
+.borde-verde { border-top: 8px solid #10b981; background: #f0fdf4; }
+.borde-rojo { border-top: 8px solid #ef4444; background: #fef2f2; }
+.borde-azul { border-top: 8px solid #3b82f6; }
 
-.btn-accion-gigante {
-  width: 100%;
-  padding: 25px;
-  font-size: 22px;
+.label-card {
+  font-size: 14px;
   font-weight: 800;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  transition: 0.2s;
+  color: #64748b;
+  text-transform: uppercase;
 }
 
-.btn-verde { background: #27ae60; box-shadow: 0 6px 0 #1e8449; }
-.btn-gris { background: #94a3b8; box-shadow: 0 6px 0 #64748b; }
-
-.btn-verde:active, .btn-gris:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
-}
-
-/* --- TARJETAS E INDICADORES --- */
-.fila-indicadores {
-  display: flex;
-  gap: 25px;
-}
-
-.numero-gigante {
-  font-size: 60px;
+.valor-card {
+  font-size: 36px;
   font-weight: 900;
 }
-/* --- COLORES --- */
+
+/* --- 6. GRÁFICO --- */
+.card-grafico {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* --- 7. RESPONSIVO (CELULARES) --- */
+@media (max-width: 768px) {
+  .barra-titulo-dark {
+    flex-direction: column;
+    padding: 20px;
+    gap: 15px;
+  }
+
+  .titulo-texto { font-size: 18px; }
+
+  .fila-inputs {
+    flex-direction: column;
+  }
+
+  .grid-indicadores {
+    grid-template-columns: 1fr; /* Una debajo de otra en cel */
+  }
+
+  .valor-card { font-size: 32px; }
+
+  .card-grafico {
+    padding: 15px;
+  }
+}
+
+/* --- UTILIDADES DE COLOR --- */
 .color-naranja { color: #f59e0b; }
 .color-verde { color: #10b981; }
 .color-azul { color: #3b82f6; }
 .color-rojo { color: #ef4444; }
-
-/* Mejora de las Tarjetas */
-.tarjeta-blanca {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.tarjeta-blanca:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-/* Indicadores con más estilo */
-.indicador {
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Añadir un brillo sutil a los indicadores */
-.indicador::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.subtitulo {
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  color: #64748b;
-  margin-bottom: 8px;
-}
-
-.numero-grande {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-/* Barra de Filtros más compacta y moderna */
-.barra-filtros {
-  background: #f8fafc;
-  padding: 15px 25px;
-  border-radius: 12px;
-  display: flex;
-  gap: 15px;
-  align-items: flex-end;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 30px;
-}
-
-.campo-filtro {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-
-.campo-filtro label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-}
-
-.input-moderno {
-  padding: 10px 15px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 15px;
-  color: #1e293b;
-  background: white;
-  outline: none;
-  transition: 0.2s;
-}
-
-.input-moderno:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.btn-filtrar {
-  background: #2563eb;
-  color: white;
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  height: 42px;
-  transition: 0.2s;
-}
-
-.btn-filtrar:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-}
-
-/* --- LAYOUT FORMULARIO --- */
-.layout-central {
-  display: flex;
-  gap: 30px;
-}
-
-.formulario { flex: 1.2; }
-.columna-resumen { 
-  flex: 0.8; 
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.resumen-item {
-  text-align: center;
-  padding: 25px !important;
-}
-
-/* --- INPUTS --- */
-.etiqueta-grande {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 10px;
-}
-
-.campo-gigante {
-  width: 100%;
-  padding: 18px;
-  font-size: 22px;
-  font-weight: 600;
-  border-radius: 12px;
-  border: 2px solid #cbd5e1;
-  margin-bottom: 25px;
-  outline: none;
-  transition: 0.2s;
-}
-
-.campo-gigante:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-
-/* --- ESTADOS --- */
-.cargando {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 30px;
-  font-weight: bold;
-  color: #1e293b;
-}
-
-.borde-verde { border: 4px solid #10b981 !important; }
-.borde-rojo { border: 4px solid #ef4444 !important; }
-
-.seccion-formulario-centrada {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 20px;
-}
-
-.seccion-formulario-centrada .formulario {
-  width: 100%;
-  max-width: 800px; /* Formulario más ancho y cómodo */
-  padding: 50px;
-}
-
-table th {
-  text-transform: uppercase;
-  font-size: 13px;
-  color: #64748b;
-  letter-spacing: 1px;
-}
-
-table td {
-  font-size: 16px;
-  color: #334155;
-}
-
-.borde-verde {
-  border: 3px solid #10b981 !important;
-  background: #f0fdf4 !important;
-}
-/* Contenedor del input para que el símbolo no flote raro */
-.contenedor-input-soles {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.btn-icon {
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: 0.2s;
-}
-
-.btn-edit { background: #e0f2fe; color: #0369a1; }
-.btn-edit:hover { background: #bae6fd; }
-
-.btn-delete { background: #fee2e2; color: #991b1b; }
-.btn-delete:hover { background: #fecaca; }
-
-.borde-azul {
-  border: 3px solid #3b82f6 !important;
-  background-color: #f0f7ff !important;
-}
-
-.badge-edicion {
-    background: #3b82f6;
-    color: white;
-    display: inline-block;
-    padding: 5px 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-/* El símbolo S/. fijo a la izquierda */
-.simbolo-soles {
-  position: absolute;
-  left: 20px;
-  font-size: 24px;
-  font-weight: 900;
-  color: #1e293b; /* Color oscuro profesional */
-  pointer-events: none; /* Para que si haces clic en S/. el cursor entre al input */
-  z-index: 10;
-}
-
-/* El input con espacio suficiente para que el número empiece después del S/. */
-.input-con-prefijo {
-  padding-left: 70px !important; /* Espacio extra para que no choque */
-  width: 100%;
-  margin-bottom: 0px !important; /* Quitamos margen para que no se mueva */
-}
-
-/* Opcional: Para que cuando hagas foco brille de color azul */
-.input-con-prefijo:focus {
-  border-color: #3b82f6;
-  background-color: white;
-}
-/* --- RESPONSIVE DESIGN (MÓVIL) --- */
-@media (max-width: 768px) {
-  .barra-titulo-dark {
-    padding: 15px 20px !important;
-    flex-direction: column !important; /* Título arriba, botón abajo */
-    gap: 15px;
-    text-align: center;
-  }
-
-  .titulo-texto {
-    font-size: 20px !important; /* Texto más pequeño para que no se corte */
-  }
-
-  /* Ajustar Contenedor de Filtros */
-  .contenedor-filtros {
-    margin: 15px !important;
-    padding: 20px !important;
-  }
-
-  .fila-inputs {
-    flex-direction: column !important; /* Fechas una debajo de otra */
-    gap: 10px;
-  }
-
-  .input-filtro {
-    font-size: 16px !important; /* Evita que el zoom del iPhone se active */
-    padding: 12px !important;
-  }
-
-  /* Ajustar las Tarjetas (Indicadores) */
-  .grid-indicadores {
-    grid-template-columns: 1fr !important; /* Una tarjeta por fila */
-    padding: 0 15px !important;
-    gap: 15px !important;
-  }
-
-  .card-pos {
-    padding: 20px 10px !important;
-  }
-
-  .valor-card {
-    font-size: 32px !important; /* Número más pequeño para que no se desborde */
-  }
-
-  .label-card {
-    font-size: 14px !important;
-  }
-
-  /* Ajustar el Gráfico */
-  .card-grafico {
-    margin: 20px 15px !important;
-    padding: 15px !important;
-  }
-
-  .card-grafico h3 {
-    font-size: 14px !important;
-  }
-
-  /* Reducir el tamaño de la dona en el gráfico */
-  .recharts-responsive-container {
-    height: 300px !important;
-  }
-  .pantalla-principal {
-    padding: 15px; /* Menos espacio en las orillas */
-  }
-
-  .barra-titulo {
-    flex-direction: column; /* Título arriba, botón abajo */
-    gap: 15px;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .barra-titulo span {
-    font-size: 24px; /* Título más pequeño en móvil */
-  }
-
-  /* El formulario ahora ocupa todo el ancho */
-  .formulario {
-    padding: 20px !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Las filas de dos columnas (Cantidad / Costo) ahora son una sola columna */
-  .seccion-formulario-centrada div[style*="display: flex"] {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  /* Ajuste del contenedor de Soles para que no se rompa */
-  .contenedor-input-soles {
-    width: 100%;
-  }
-
-  .campo-gigante {
-    font-size: 18px; /* Texto más cómodo para el dedo */
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .simbolo-soles {
-    font-size: 18px;
-    left: 15px;
-  }
-
-  .input-con-prefijo {
-    padding-left: 50px !important;
-  }
-
-  /* Botones apilados uno sobre otro */
-  .btn-accion-gigante {
-    width: 100% !important;
-    font-size: 18px;
-    padding: 15px;
-  }
-
-
-  table {
-    min-width: 600px; /* Evita que la tabla se comprima demasiado */
-  }
-
-  .fila-indicadores {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .numero-gigante {
-    font-size: 35px;
-  }
-}
-/* --- NUEVA REGLA PARA EL SCROLL DE LA TABLA --- */
-.contenedor-tabla-scroll {
-  width: 100%;
-  overflow-x: auto; /* Permite mover hacia los lados */
-  display: block;
-  -webkit-overflow-scrolling: touch; /* Suavidad en iPhone/Android */
-}
-
-/* Forzamos un ancho mínimo a la tabla en móviles para que no se amontone */
-@media (max-width: 768px) {
-  .contenedor-tabla-scroll table {
-    min-width: 800px; /* Al ser 800px, aparecerá la barra de scroll en el cel */
-  }
-
-  /* Opcional: una sombra sutil para indicar que hay más contenido a la derecha */
-  .contenedor-tabla-scroll {
-    border-radius: 0 0 15px 15px;
-    box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.2);
-  }
-}
-/* --- RESPONSIVE --- */
-@media (max-width: 1100px) {
-  .layout-central, .fila-indicadores {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 400px) {
-  .valor-card {
-    font-size: 28px !important;
-  }
-}
