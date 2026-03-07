@@ -1,12 +1,14 @@
-/* --- 1. RESET Y BASE --- */
+/* --- 1. RESET Y CONFIGURACIÓN BASE --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  background-color: #f0f2f5 !important;
+body, html, #root {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f2f5;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -14,14 +16,14 @@ body {
 .pantalla-principal {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 50px; /* Aquí está el espacio de los lados */
+  padding: 40px 50px; /* 50px de espacio a los lados */
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-/* --- 3. HEADER OSCURO --- */
-.barra-titulo-dark {
+/* --- 3. HEADERS (ESTILO OSCURO PROFESIONAL) --- */
+.barra-titulo, .barra-titulo-dark {
   background: #1e293b;
   color: white;
   padding: 25px 40px;
@@ -33,7 +35,7 @@ body {
   border-bottom: 5px solid #3b82f6;
 }
 
-.titulo-texto {
+.barra-titulo span, .titulo-texto {
   font-size: 28px;
   font-weight: 900;
   display: flex;
@@ -42,43 +44,118 @@ body {
   text-transform: uppercase;
 }
 
-.btn-volver {
+/* --- 4. BOTONES --- */
+.btn-dashboard, .btn-volver {
   background: #3b82f6;
   color: white;
   border: none;
   padding: 12px 25px;
-  border-radius: 10px;
-  font-weight: bold;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  transition: 0.3s;
 }
 
-/* --- 4. FILTROS --- */
-.contenedor-filtros {
+.btn-dashboard:hover { background: #2563eb; transform: translateY(-2px); }
+
+.btn-accion-gigante {
+  width: 100%;
+  padding: 20px;
+  font-size: 20px;
+  font-weight: 800;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  transition: 0.2s;
+}
+
+.btn-verde { background: #27ae60; box-shadow: 0 6px 0 #1e8449; }
+.btn-gris { background: #94a3b8; box-shadow: 0 6px 0 #64748b; }
+
+.btn-verde:active, .btn-gris:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* --- 5. FORMULARIO (REGISTRO DE COMPRA) --- */
+.seccion-formulario-centrada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.tarjeta-blanca {
   background: white;
-  padding: 35px;
+  padding: 30px;
   border-radius: 20px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
 }
 
-.fila-inputs {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+.formulario {
+  width: 100%;
+  max-width: 800px;
+  padding: 40px !important;
 }
 
-.input-filtro {
-  flex: 1;
-  padding: 15px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 18px;
+.etiqueta-grande {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #334155;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.campo-gigante, .input-filtro {
+  width: 100%;
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  margin-bottom: 25px;
   outline: none;
+  background: white;
 }
 
-/* --- 5. TARJETAS (INDICADORES) --- */
+.campo-gigante:focus { border-color: #3b82f6; }
+
+/* Posicionamiento del S/. */
+.contenedor-input-soles {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.simbolo-soles {
+  position: absolute;
+  left: 20px;
+  top: 35% !important; /* Mantenemos el S/. arriba como pediste */
+  transform: translateY(-50%);
+  font-size: 24px;
+  font-weight: 900;
+  color: #1e293b;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.input-con-prefijo {
+  padding-left: 70px !important;
+}
+
+/* --- 6. INDICADORES DASHBOARD (TARJETAS GRUESAS) --- */
 .grid-indicadores {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -106,35 +183,86 @@ body {
   font-weight: 800;
   color: #64748b;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.valor-card {
+.valor-card, .numero-grande {
   font-size: 42px;
   font-weight: 900;
 }
 
-/* --- 6. GRÁFICO --- */
+/* --- 7. TABLAS E HISTORIAL --- */
+.contenedor-tabla-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+table th {
+  background: #f8fafc;
+  padding: 15px;
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+table td {
+  padding: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+/* --- 8. GRÁFICO Y COLORES --- */
 .card-grafico {
   background: white;
   padding: 40px;
-  border-radius: 20px;
+  border-radius: 25px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-/* --- COLORES --- */
 .color-naranja { color: #f59e0b; }
 .color-verde { color: #10b981; }
 .color-rojo { color: #ef4444; }
 
-/* --- RESPONSIVO --- */
-@media (max-width: 1000px) {
-  .grid-indicadores { grid-template-columns: repeat(2, 1fr); }
+/* --- 9. RESPONSIVO (CELULAR) --- */
+@media (max-width: 768px) {
+  .pantalla-principal { padding: 20px 15px; }
+
+  .barra-titulo, .barra-titulo-dark {
+    flex-direction: column;
+    padding: 20px;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .barra-titulo span, .titulo-texto { font-size: 20px; }
+
+  .fila-inputs { flex-direction: column; }
+
+  .grid-indicadores {
+    grid-template-columns: 1fr;
+    padding: 0 10px;
+  }
+
+  .valor-card { font-size: 32px; }
+
+  .formulario { padding: 20px !important; }
+
+  .btn-accion-gigante { font-size: 18px; }
 }
 
-@media (max-width: 600px) {
-  .pantalla-principal { padding: 20px; }
-  .grid-indicadores { grid-template-columns: 1fr; }
-  .barra-titulo-dark { flex-direction: column; gap: 15px; }
-  .fila-inputs { flex-direction: column; }
+@media (max-width: 1100px) and (min-width: 769px) {
+  .grid-indicadores { grid-template-columns: repeat(2, 1fr); }
 }
