@@ -1,137 +1,93 @@
-/* --- 1. RESET GENERAL --- */
+/* --- 1. RESET Y BASE --- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body, html, #root {
-  width: 100%;
-  min-height: 100vh;
-  background-color: #f0f2f5;
+body {
+  background-color: #f0f2f5 !important;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.tarjeta-blanca {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border: 1px solid #e2e8f0;
+/* --- 2. CONTENEDOR PRINCIPAL (ESPACIO DE RESPETO) --- */
+.pantalla-principal {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 50px; /* Aquí está el espacio de los lados */
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-/* --- 3. HEADERS (AMBOS ESTILOS) --- */
-.barra-titulo, .barra-titulo-dark {
+/* --- 3. HEADER OSCURO --- */
+.barra-titulo-dark {
   background: #1e293b;
   color: white;
-  padding: 30px;
+  padding: 25px 40px;
   border-radius: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-bottom: 5px solid #3b82f6;
 }
 
-.barra-titulo span, .titulo-texto {
-  font-size: 30px;
+.titulo-texto {
+  font-size: 28px;
   font-weight: 900;
   display: flex;
   align-items: center;
   gap: 15px;
-}
-
-/* --- 4. BOTONES --- */
-.btn-dashboard, .btn-volver {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 15px 25px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: bold;
-  font-size: 16px;
-  transition: 0.3s;
-}
-
-.btn-accion-gigante {
-  width: 100%;
-  padding: 20px;
-  font-size: 20px;
-  font-weight: 800;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  transition: 0.2s;
-}
-
-.btn-verde { background: #27ae60; box-shadow: 0 6px 0 #1e8449; }
-.btn-gris { background: #94a3b8; box-shadow: 0 6px 0 #64748b; }
-
-.btn-verde:active, .btn-gris:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
-}
-
-/* --- 5. FORMULARIO (REGISTRO DE COMPRA) --- */
-.seccion-formulario-centrada {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.formulario {
-  width: 100%;
-  max-width: 800px;
-  padding: 40px !important;
-}
-
-.etiqueta-grande {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
-.campo-gigante, .input-filtro {
-  width: 100%;
-  padding: 16px;
-  font-size: 20px;
-  font-weight: 600;
-  border-radius: 12px;
-  border: 2px solid #cbd5e1;
-  margin-bottom: 25px;
+.btn-volver {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- 4. FILTROS --- */
+.contenedor-filtros {
+  background: white;
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.fila-inputs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.input-filtro {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 18px;
   outline: none;
 }
 
-/* Contenedor del input */
-.contenedor-input-soles {
-  position: relative;
-  display: flex;
-  align-items: center; /* Centrado base */
-  width: 100%;
-}
-
-/* --- 6. INDICADORES DASHBOARD (EL DISEÑO QUE TE GUSTÓ) --- */
-.grid-indicadores, .fila-indicadores {
+/* --- 5. TARJETAS (INDICADORES) --- */
+.grid-indicadores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
-.card-pos, .indicador {
+.card-pos {
   background: white;
-  padding: 30px 15px;
+  padding: 30px 10px;
   border-radius: 20px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
@@ -145,132 +101,40 @@ body, html, #root {
 .borde-rojo { border-top: 10px solid #ef4444; background: #fef2f2; }
 .borde-azul { border-top: 10px solid #3b82f6; }
 
-.label-card, .subtitulo {
-  font-size: 16px;
+.label-card {
+  font-size: 15px;
   font-weight: 800;
   color: #64748b;
   text-transform: uppercase;
 }
 
-.valor-card, .numero-grande {
-  font-size: 45px;
+.valor-card {
+  font-size: 42px;
   font-weight: 900;
 }
 
-/* --- 7. TABLAS E HISTORIAL --- */
-.contenedor-tabla-scroll {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 20px;
+/* --- 6. GRÁFICO --- */
+.card-grafico {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table th {
-  background: #f1f5f9;
-  padding: 15px;
-  text-transform: uppercase;
-  font-size: 13px;
-  color: #64748b;
-}
-
-table td {
-  padding: 15px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-/* --- 8. UTILIDADES --- */
+/* --- COLORES --- */
 .color-naranja { color: #f59e0b; }
 .color-verde { color: #10b981; }
-.color-azul { color: #3b82f6; }
 .color-rojo { color: #ef4444; }
 
-/* --- CONTENEDOR PRINCIPAL (El que da el espacio a los lados) --- */
-.pantalla-principal {
-  max-width: 1400px;
-  margin: 0 auto; /* Centra todo el contenido */
-  padding: 30px 50px; /* 50px de espacio de respeto a los lados */
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
+/* --- RESPONSIVO --- */
+@media (max-width: 1000px) {
+  .grid-indicadores { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* --- HEADER OSCURO (Ajustado para que no toque los bordes) --- */
-.barra-titulo-dark, .barra-titulo {
-  background: #1e293b;
-  color: white;
-  padding: 25px 40px;
-  border-radius: 20px; /* Bordes redondeados para que no choque con la esquina */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  margin-bottom: 10px; /* Espacio abajo */
-}
-
-/* --- FILTROS E INDICADORES (Asegurar que sigan el margen) --- */
-.contenedor-filtros, .grid-indicadores, .card-grafico {
-  width: 100%;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-/* El símbolo S/. - SUBIDA AGRESIVA */
-.simbolo-soles {
-  position: absolute;
-  left: 20px;
-  
-  /* Reducimos el top drásticamente para que suba */
-  top: 35% !important; 
-  transform: translateY(-50%); 
-  
-  font-size: 24px; 
-  font-weight: 900;
-  color: #1e293b;
-  pointer-events: none;
-  
-  /* Forzamos que no tenga espacio extra abajo */
-  line-height: 0 !important; 
-  display: inline-block;
-  z-index: 10;
-}
-
-/* El input - Asegurar que el texto del número esté bien centrado */
-.input-con-prefijo {
-  padding-left: 70px !important;
-  height: 70px !important; /* Altura clara para que se note el movimiento */
-  display: flex;
-  align-items: center;
-  font-size: 24px;
-}
-
-/* --- 9. RESPONSIVO (MÓVIL) --- */
-@media (max-width: 768px) {
-  .pantalla-principal { padding: 15px; }
-
-  .barra-titulo, .barra-titulo-dark {
-    flex-direction: column;
-    text-align: center;
-    gap: 15px;
-    padding: 20px;
-  }
-
-  .barra-titulo span, .titulo-texto { font-size: 22px; }
-
-  .formulario { padding: 20px !important; }
-  
-  .grid-indicadores, .fila-indicadores {
-    grid-template-columns: 1fr;
-    padding: 0 10px;
-  }
-
-  .valor-card, .numero-grande { font-size: 32px; }
-
-  /* Para que el Formulario de inversión en móvil no se rompa */
-  .seccion-formulario-centrada div[style*="display: flex"] {
-    flex-direction: column !important;
-  }
+@media (max-width: 600px) {
+  .pantalla-principal { padding: 20px; }
+  .grid-indicadores { grid-template-columns: 1fr; }
+  .barra-titulo-dark { flex-direction: column; gap: 15px; }
+  .fila-inputs { flex-direction: column; }
 }
