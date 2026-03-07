@@ -21,8 +21,10 @@ const DashboardInversion: React.FC = () => {
   if (!stats) return <div className="cargando">Cargando...</div>;
 
   return (
-    <div>
-      {/* HEADER OSCURO */}
+    /* CONTENEDOR PRINCIPAL: Este es el que da el margen y el "espacio de respeto" */
+    <div className="pantalla-principal">
+      
+      {/* HEADER OSCURO REDONDEADO */}
       <div className="barra-titulo-dark">
         <div className="titulo-texto">
           <BarChart3 size={40} />
@@ -33,20 +35,33 @@ const DashboardInversion: React.FC = () => {
         </button>
       </div>
 
-      {/* FILTROS */}
+      {/* SECCIÓN DE FILTROS */}
       <div className="contenedor-filtros">
         <div className="fila-inputs">
-          <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
-          <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
+          <div style={{ flex: 1 }}>
+            <label className="label-card" style={{ justifyContent: 'flex-start', marginBottom: '5px' }}>Desde</label>
+            <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label className="label-card" style={{ justifyContent: 'flex-start', marginBottom: '5px' }}>Hasta</label>
+            <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
+          </div>
         </div>
-        <select className="input-filtro" style={{width: '100%', marginBottom: '20px'}} onChange={e => setBusqueda({...busqueda, producto: e.target.value})}>
-           <option value="">-- SELECCIONE PRODUCTO --</option>
-           {nombresProductos.map((n, i) => <option key={i} value={n}>{n}</option>)}
+        
+        <label className="label-card" style={{ justifyContent: 'flex-start', marginBottom: '5px' }}>Producto</label>
+        <select 
+          className="input-filtro" 
+          style={{ width: '100%', marginBottom: '20px' }} 
+          onChange={e => setBusqueda({...busqueda, producto: e.target.value})}
+        >
+          <option value="">-- SELECCIONE PRODUCTO --</option>
+          {nombresProductos.map((n, i) => <option key={i} value={n}>{n}</option>)}
         </select>
-        <button className="btn-dashboard" onClick={() => setFiltros(busqueda)}>FILTRAR</button>
+        
+        <button className="btn-dashboard" onClick={() => setFiltros(busqueda)}>FILTRAR RESULTADOS</button>
       </div>
 
-      {/* INDICADORES (COMO EN TU IMAGEN) */}
+      {/* INDICADORES (GRID DE 4 TARJETAS) */}
       <div className="grid-indicadores">
         <div className="card-pos borde-naranja">
           <span className="label-card">INVERSIÓN</span>
@@ -54,12 +69,12 @@ const DashboardInversion: React.FC = () => {
         </div>
 
         <div className="card-pos borde-verde">
-          <span className="label-card"><Wallet size={16}/> CAJA</span>
+          <span className="label-card"><Wallet size={20}/> CAJA</span>
           <span className="valor-card color-verde">{fMone(stats.dineroEnCaja)}</span>
         </div>
 
         <div className="card-pos borde-rojo">
-          <span className="label-card"><HandCoins size={16}/> FIADOS</span>
+          <span className="label-card"><HandCoins size={20}/> FIADOS</span>
           <span className="valor-card color-rojo">{fMone(stats.plataPorCobrar)}</span>
         </div>
 
@@ -71,9 +86,9 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
-      {/* GRÁFICO */}
+      {/* GRÁFICO DE DISTRIBUCIÓN */}
       <div className="card-grafico">
-        <h3 className="label-card" style={{marginBottom: '30px'}}>DISTRIBUCIÓN FINANCIERA</h3>
+        <h3 className="label-card" style={{ marginBottom: '30px', fontSize: '20px' }}>DISTRIBUCIÓN FINANCIERA</h3>
         <div style={{ height: '400px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -83,13 +98,14 @@ const DashboardInversion: React.FC = () => {
                   {name: 'Fiados', value: stats.plataPorCobrar}, 
                   {name: 'Inversión', value: stats.inversionTotal}
                 ]} 
-                /* CAMBIO AQUÍ: Radios más pequeños para móvil */
                 innerRadius={window.innerWidth < 768 ? 60 : 100} 
                 outerRadius={window.innerWidth < 768 ? 90 : 140} 
                 paddingAngle={5} 
                 dataKey="value"
               >
-                <Cell fill="#10b981" /><Cell fill="#ef4444" /><Cell fill="#f59e0b" />
+                <Cell fill="#10b981" />
+                <Cell fill="#ef4444" />
+                <Cell fill="#f59e0b" />
               </Pie>
               <Tooltip formatter={(v: any) => fMone(v)} />
               <Legend verticalAlign="bottom" height={36}/>

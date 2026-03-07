@@ -12,16 +12,6 @@ body, html, #root {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* --- 2. CONTENEDORES PRINCIPALES --- */
-.pantalla-principal {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
 .tarjeta-blanca {
   background: white;
   padding: 30px;
@@ -207,6 +197,36 @@ table td {
 .color-verde { color: #10b981; }
 .color-azul { color: #3b82f6; }
 .color-rojo { color: #ef4444; }
+
+/* --- CONTENEDOR PRINCIPAL (El que da el espacio a los lados) --- */
+.pantalla-principal {
+  max-width: 1400px;
+  margin: 0 auto; /* Centra todo el contenido */
+  padding: 30px 50px; /* 50px de espacio de respeto a los lados */
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* --- HEADER OSCURO (Ajustado para que no toque los bordes) --- */
+.barra-titulo-dark, .barra-titulo {
+  background: #1e293b;
+  color: white;
+  padding: 25px 40px;
+  border-radius: 20px; /* Bordes redondeados para que no choque con la esquina */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  margin-bottom: 10px; /* Espacio abajo */
+}
+
+/* --- FILTROS E INDICADORES (Asegurar que sigan el margen) --- */
+.contenedor-filtros, .grid-indicadores, .card-grafico {
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
 
 /* --- 9. RESPONSIVO (MÓVIL) --- */
 @media (max-width: 768px) {
