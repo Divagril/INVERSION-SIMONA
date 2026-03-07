@@ -311,6 +311,45 @@ table td {
 
 .btn-dashboard-filtro:hover { background: #2563eb; }
 
+/* --- BOTONES DE ACCIÓN EN LA TABLA (EDITAR / ELIMINAR) --- */
+.btn-icon {
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Botón Editar (Azul) */
+.btn-edit {
+  background-color: #e0f2fe !important; /* Azul muy claro */
+  color: #0369a1 !important; /* Azul fuerte */
+}
+
+.btn-edit:hover {
+  background-color: #bae6fd !important;
+  transform: scale(1.1); /* Se agranda un poquito al pasar el mouse */
+}
+
+/* Botón Eliminar (Rojo) */
+.btn-delete {
+  background-color: #fee2e2 !important; /* Rojo muy claro */
+  color: #991b1b !important; /* Rojo fuerte */
+}
+
+.btn-delete:hover {
+  background-color: #fecaca !important;
+  transform: scale(1.1);
+}
+
+/* Ajuste para los iconos dentro de los botones */
+.btn-icon svg {
+  stroke-width: 2.5px; /* Iconos más gruesos y legibles */
+}
 
 /* --- RESPONSIVO PARA FILTROS --- */
 @media (max-width: 900px) {
