@@ -11,7 +11,6 @@ const DashboardInversion: React.FC = () => {
   const [busqueda, setBusqueda] = useState({ desde: '', hasta: '', producto: '' });
   const [filtros, setFiltros] = useState({ desde: '', hasta: '', producto: '' });
 
-  // Formato de moneda S/ con alineación correcta
   const fMone = (n: any) => "S/ " + (Number(n) || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 });
 
   useEffect(() => {
@@ -22,12 +21,12 @@ const DashboardInversion: React.FC = () => {
     getRentabilidad(filtros).then(setStats).catch(console.error);
   }, [filtros]);
 
-  if (!stats) return <div className="cargando">Cargando análisis...</div>;
+  if (!stats) return <div className="cargando">Cargando datos...</div>;
 
   return (
     <div className="pantalla-principal">
       
-      {/* HEADER OSCURO CON ESPACIO DE RESPETO */}
+      {/* HEADER */}
       <div className="barra-titulo-dark">
         <div className="titulo-texto">
           <BarChart3 size={35} />
@@ -38,7 +37,7 @@ const DashboardInversion: React.FC = () => {
         </button>
       </div>
 
-      {/* SECCIÓN DE FILTROS - UNA SOLA FILA EN PC */}
+      {/* SECCIÓN DE FILTROS EN UNA SOLA FILA */}
       <div className="contenedor-filtros">
         <div className="fila-filtros-pc">
           
@@ -47,7 +46,6 @@ const DashboardInversion: React.FC = () => {
             <input 
               type="date" 
               className="input-filtro" 
-              style={{ marginBottom: 0 }}
               onChange={e => setBusqueda({...busqueda, desde: e.target.value})} 
             />
           </div>
@@ -57,21 +55,22 @@ const DashboardInversion: React.FC = () => {
             <input 
               type="date" 
               className="input-filtro" 
-              style={{ marginBottom: 0 }}
               onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} 
             />
           </div>
 
+          {/* SELECT DE PRODUCTO CORREGIDO */}
           <div className="grupo-input" style={{ flex: 1.5 }}>
             <label className="label-card" style={{ justifyContent: 'flex-start' }}>Producto Específico</label>
             <select 
               className="input-filtro" 
-              style={{ marginBottom: 0 }}
-              value={busqueda.producto}
+              value={busqueda.producto} 
               onChange={e => setBusqueda({...busqueda, producto: e.target.value})}
             >
-              <option value="">-- TODOS LOS PRODUCTOS --</option>
-              {nombresProductos.map((n, i) => <option key={i} value={n}>{n}</option>)}
+               <option value="">-- TODOS LOS PRODUCTOS --</option>
+               {nombresProductos.map((nombre, index) => (
+                 <option key={index} value={nombre}>{nombre}</option>
+               ))}
             </select>
           </div>
 
@@ -82,7 +81,7 @@ const DashboardInversion: React.FC = () => {
         </div>
       </div>
 
-      {/* INDICADORES (GRID DE 4) */}
+      {/* INDICADORES */}
       <div className="grid-indicadores">
         <div className="card-pos borde-naranja">
           <span className="label-card">INVERSIÓN</span>
@@ -126,7 +125,7 @@ const DashboardInversion: React.FC = () => {
               >
                 <Cell fill="#10b981" /><Cell fill="#ef4444" /><Cell fill="#f59e0b" />
               </Pie>
-              <Tooltip formatter={(v: any) => fMone(v)} />
+              <Tooltip />
               <Legend verticalAlign="bottom" height={36}/>
             </PieChart>
           </ResponsiveContainer>
