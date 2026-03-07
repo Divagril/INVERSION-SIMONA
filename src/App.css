@@ -90,45 +90,238 @@ body, html, #root {
   gap: 25px;
 }
 
-.tarjeta-blanca {
-  background: white;
-  padding: 30px;
-  border-radius: 24px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border: 1px solid #e2e8f0;
-}
-
-.indicador {
-  flex: 1;
-  text-align: center;
-  min-width: 150px; 
-}
-
-.subtitulo {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
 .numero-gigante {
   font-size: 60px;
   font-weight: 900;
 }
-.numero-grande {
-  font-size: 32px; /* Reducido de 45px para evitar saltos de línea */
-  font-weight: 800;
-  display: block;
-  word-break: break-all; /* Asegura que no se distorsione el contenedor */
-}
-
 /* --- COLORES --- */
 .color-naranja { color: #f59e0b; }
 .color-verde { color: #10b981; }
 .color-azul { color: #3b82f6; }
 .color-rojo { color: #ef4444; }
+
+/* Mejora de las Tarjetas */
+.tarjeta-blanca {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-blanca:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Indicadores con más estilo */
+.indicador {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Añadir un brillo sutil a los indicadores */
+.indicador::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.subtitulo {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.numero-grande {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Barra de Filtros más compacta y moderna */
+.barra-filtros {
+  background: #f8fafc;
+  padding: 15px 25px;
+  border-radius: 12px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 30px;
+}
+
+.campo-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.campo-filtro label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.input-moderno {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 15px;
+  color: #1e293b;
+  background: white;
+  outline: none;
+  transition: 0.2s;
+}
+
+/* --- RESET Y FONDO --- */
+body {
+  background-color: #f0f2f5 !important;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- CABECERA OSCURA --- */
+.barra-titulo-dark {
+  background: #1e293b;
+  color: white;
+  padding: 25px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 5px solid #3b82f6; /* Línea decorativa azul */
+}
+
+.titulo-texto {
+  font-size: 32px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- BOTÓN VOLVER --- */
+.btn-volver {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- CONTENEDOR DE FILTROS --- */
+.contenedor-filtros {
+  background: white;
+  margin: 30px 50px;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.fila-inputs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.input-filtro {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+/* --- TARJETAS DE INDICADORES (IGUAL A TU FOTO) --- */
+.grid-indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  padding: 0 50px;
+}
+
+.card-pos {
+  background: white;
+  padding: 30px 10px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Bordes superiores gruesos */
+.borde-naranja { border-top: 10px solid #f59e0b; }
+.borde-verde { border-top: 10px solid #10b981; background: #f0fdf4; }
+.borde-rojo { border-top: 10px solid #ef4444; background: #fef2f2; }
+.borde-azul { border-top: 10px solid #3b82f6; }
+
+.label-card {
+  font-size: 16px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.valor-card {
+  font-size: 48px;
+  font-weight: 900;
+}
+
+/* --- GRÁFICO --- */
+.card-grafico {
+  background: white;
+  margin: 40px 50px;
+  padding: 30px;
+  border-radius: 25px;
+  text-align: center;
+}
+
+.input-moderno:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn-filtrar {
+  background: #2563eb;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  height: 42px;
+  transition: 0.2s;
+}
+
+.btn-filtrar:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
 
 /* --- LAYOUT FORMULARIO --- */
 .layout-central {
@@ -336,11 +529,6 @@ table td {
     padding: 15px;
   }
 
-  /* TABLA RESPONSIVE: Permite deslizar hacia los lados si es muy ancha */
-  .tarjeta-blanca {
-    overflow-x: auto; /* Scroll horizontal en la tabla */
-    border-radius: 15px;
-  }
 
   table {
     min-width: 600px; /* Evita que la tabla se comprima demasiado */
