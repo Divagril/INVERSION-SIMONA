@@ -114,22 +114,34 @@ body, html, #root {
   outline: none;
 }
 
+/* Contenedor del input */
 .contenedor-input-soles {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: center; /* Centrado base */
+  width: 100%;
 }
 
+/* El símbolo S/. corregido */
 .simbolo-soles {
   position: absolute;
   left: 20px;
+  top: 50%; /* Lo baja a la mitad del contenedor */
+  transform: translateY(-50%); /* Lo sube exactamente la mitad de su propio tamaño para centrarlo */
   font-size: 22px;
   font-weight: 900;
   color: #1e293b;
+  pointer-events: none;
+  line-height: 1; /* Evita que el interlineado lo empuje hacia abajo */
+  z-index: 10;
 }
 
+/* El input para que el texto coincida en altura */
 .input-con-prefijo {
   padding-left: 65px !important;
+  display: flex;
+  align-items: center;
+  line-height: normal; /* Normaliza la altura del texto interno */
 }
 
 /* --- 6. INDICADORES DASHBOARD (EL DISEÑO QUE TE GUSTÓ) --- */
