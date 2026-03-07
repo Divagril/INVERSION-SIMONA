@@ -83,7 +83,11 @@ const DashboardInversion: React.FC = () => {
                   {name: 'Fiados', value: stats.plataPorCobrar}, 
                   {name: 'Inversión', value: stats.inversionTotal}
                 ]} 
-                innerRadius={100} outerRadius={140} paddingAngle={5} dataKey="value"
+                /* CAMBIO AQUÍ: Radios más pequeños para móvil */
+                innerRadius={window.innerWidth < 768 ? 60 : 100} 
+                outerRadius={window.innerWidth < 768 ? 90 : 140} 
+                paddingAngle={5} 
+                dataKey="value"
               >
                 <Cell fill="#10b981" /><Cell fill="#ef4444" /><Cell fill="#f59e0b" />
               </Pie>

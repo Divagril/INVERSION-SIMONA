@@ -186,121 +186,6 @@ body, html, #root {
   transition: 0.2s;
 }
 
-/* --- RESET Y FONDO --- */
-body {
-  background-color: #f0f2f5 !important;
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-}
-
-/* --- CABECERA OSCURA --- */
-.barra-titulo-dark {
-  background: #1e293b;
-  color: white;
-  padding: 25px 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 5px solid #3b82f6; /* Línea decorativa azul */
-}
-
-.titulo-texto {
-  font-size: 32px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* --- BOTÓN VOLVER --- */
-.btn-volver {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* --- CONTENEDOR DE FILTROS --- */
-.contenedor-filtros {
-  background: white;
-  margin: 30px 50px;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.fila-inputs {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.input-filtro {
-  flex: 1;
-  padding: 15px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 18px;
-}
-
-/* --- TARJETAS DE INDICADORES (IGUAL A TU FOTO) --- */
-.grid-indicadores {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
-  padding: 0 50px;
-}
-
-.card-pos {
-  background: white;
-  padding: 30px 10px;
-  border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Bordes superiores gruesos */
-.borde-naranja { border-top: 10px solid #f59e0b; }
-.borde-verde { border-top: 10px solid #10b981; background: #f0fdf4; }
-.borde-rojo { border-top: 10px solid #ef4444; background: #fef2f2; }
-.borde-azul { border-top: 10px solid #3b82f6; }
-
-.label-card {
-  font-size: 16px;
-  font-weight: 800;
-  color: #64748b;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.valor-card {
-  font-size: 48px;
-  font-weight: 900;
-}
-
-/* --- GRÁFICO --- */
-.card-grafico {
-  background: white;
-  margin: 40px 50px;
-  padding: 30px;
-  border-radius: 25px;
-  text-align: center;
-}
-
 .input-moderno:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -474,6 +359,66 @@ table td {
 }
 /* --- RESPONSIVE DESIGN (MÓVIL) --- */
 @media (max-width: 768px) {
+  .barra-titulo-dark {
+    padding: 15px 20px !important;
+    flex-direction: column !important; /* Título arriba, botón abajo */
+    gap: 15px;
+    text-align: center;
+  }
+
+  .titulo-texto {
+    font-size: 20px !important; /* Texto más pequeño para que no se corte */
+  }
+
+  /* Ajustar Contenedor de Filtros */
+  .contenedor-filtros {
+    margin: 15px !important;
+    padding: 20px !important;
+  }
+
+  .fila-inputs {
+    flex-direction: column !important; /* Fechas una debajo de otra */
+    gap: 10px;
+  }
+
+  .input-filtro {
+    font-size: 16px !important; /* Evita que el zoom del iPhone se active */
+    padding: 12px !important;
+  }
+
+  /* Ajustar las Tarjetas (Indicadores) */
+  .grid-indicadores {
+    grid-template-columns: 1fr !important; /* Una tarjeta por fila */
+    padding: 0 15px !important;
+    gap: 15px !important;
+  }
+
+  .card-pos {
+    padding: 20px 10px !important;
+  }
+
+  .valor-card {
+    font-size: 32px !important; /* Número más pequeño para que no se desborde */
+  }
+
+  .label-card {
+    font-size: 14px !important;
+  }
+
+  /* Ajustar el Gráfico */
+  .card-grafico {
+    margin: 20px 15px !important;
+    padding: 15px !important;
+  }
+
+  .card-grafico h3 {
+    font-size: 14px !important;
+  }
+
+  /* Reducir el tamaño de la dona en el gráfico */
+  .recharts-responsive-container {
+    height: 300px !important;
+  }
   .pantalla-principal {
     padding: 15px; /* Menos espacio en las orillas */
   }
@@ -567,5 +512,11 @@ table td {
 @media (max-width: 1100px) {
   .layout-central, .fila-indicadores {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 400px) {
+  .valor-card {
+    font-size: 28px !important;
   }
 }
