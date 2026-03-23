@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getRentabilidad, getNombresInversiones } from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Wallet, HandCoins, Filter } from 'lucide-react';
+import { ArrowLeft, BarChart3, Wallet, HandCoins, Filter, Package } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const DashboardInversion: React.FC = () => {
@@ -21,34 +21,43 @@ const DashboardInversion: React.FC = () => {
     getRentabilidad(filtros).then(setStats).catch(console.error);
   }, [filtros]);
 
-  if (!stats) return <div className="cargando">Cargando análisis real...</div>;
+  if (!stats) return <div className="cargando">Cargando análisis financiero...</div>;
 
   return (
     <div className="pantalla-principal">
+      {/* HEADER OSCURO */}
       <div className="barra-titulo-dark">
         <div className="titulo-texto">
           <BarChart3 size={35} />
           <span>ESTADO FINANCIERO REAL</span>
         </div>
-        <button className="btn-volver" onClick={() => navigate('/inversion')}>
-          <ArrowLeft size={20} /> VOLVER
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            className="btn-volver" 
+            style={{ background: '#10b981' }} 
+            onClick={() => window.open('https://simona-pl4b.onrender.com/#/inventario', '_blank')}
+          >
+            <Package size={20} /> INVENTARIO
+          </button>
+          <button className="btn-volver" onClick={() => navigate('/inversion')}>
+            <ArrowLeft size={20} /> VOLVER
+          </button>
+        </div>
       </div>
 
+      {/* FILTROS EN UNA FILA (PC) */}
       <div className="contenedor-filtros">
         <div className="fila-filtros-pc">
           <div className="grupo-input">
             <label className="label-card" style={{ justifyContent: 'flex-start' }}>Desde</label>
             <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, desde: e.target.value})} />
           </div>
-
           <div className="grupo-input">
             <label className="label-card" style={{ justifyContent: 'flex-start' }}>Hasta</label>
             <input type="date" className="input-filtro" onChange={e => setBusqueda({...busqueda, hasta: e.target.value})} />
           </div>
-
           <div className="grupo-input" style={{ flex: 1.5 }}>
-            <label className="label-card" style={{ justifyContent: 'flex-start' }}>Producto Específico</label>
+            <label className="label-card" style={{ justifyContent: 'flex-start' }}>Producto</label>
             <select 
               className="input-filtro" 
               value={busqueda.producto} 
@@ -58,13 +67,13 @@ const DashboardInversion: React.FC = () => {
               {nombresProductos.map((n, i) => <option key={i} value={n}>{n}</option>)}
             </select>
           </div>
-
           <button className="btn-dashboard-filtro" onClick={() => setFiltros(busqueda)}>
             <Filter size={18} /> FILTRAR
           </button>
         </div>
       </div>
 
+      {/* INDICADORES */}
       <div className="grid-indicadores">
         <div className="card-pos borde-naranja">
           <span className="label-card">INVERSIÓN</span>
@@ -75,19 +84,20 @@ const DashboardInversion: React.FC = () => {
           <span className="valor-card color-verde">{fMone(stats.dineroEnCaja)}</span>
         </div>
         <div className="card-pos borde-rojo">
-          <span className="label-card">FIADOS  (PENDIENTE)</span>
+          <span className="label-card">FIADOS (PENDIENTE)</span>
           <span className="valor-card color-rojo">{fMone(stats.plataPorCobrar)}</span>
         </div>
         <div className="card-pos borde-azul">
-          <span className="label-card">GANANCIA REAAL</span>
+          <span className="label-card">GANANCIA REAL</span>
           <span className={`valor-card ${stats.gananciaReal >= 0 ? 'color-verde' : 'color-rojo'}`}>
             {fMone(stats.gananciaReal)}
           </span>
         </div>
       </div>
 
+      {/* GRÁFICO */}
       <div className="card-grafico">
-        <h3 className="label-card" style={{ marginBottom: '30px', fontSize: '20px' }}>DISTRIBUCIÓN FINANCIERA</h3>
+        <h3 className="label-card" style={{marginBottom: '30px', fontSize: '20px'}}>DISTRIBUCIÓN DEL CAPITAL</h3>
         <div style={{ height: '400px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProductos, guardarInversion, actualizarInversion } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
-import { Save, RotateCcw, LayoutDashboard, ShoppingBag, Box } from 'lucide-react';
+import { Save, RotateCcw, LayoutDashboard, ShoppingBag, Box, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PurchaseHistoryTable from '../components/PurchaseHistoryTable';
 
@@ -12,13 +12,8 @@ const Investment: React.FC = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [bloqueado, setBloqueado] = useState(false);
-  const formatos = [
-  "UNIDAD", "BOTELLA", "LATA", "KG", 
-  "LITRO", "METRO", "PAQUETE", "CAJA", 
-  "SACO", "PLANCHA", "GALÓN DE GAS"
-];
-  
-  // Usamos strings vacíos para que los inputs se puedan limpiar totalmente
+
+  const formatos = ["UNIDAD", "BOTELLA", "LATA", "LATAS", "KG", "LITRO", "METRO", "PAQUETE", "CAJA", "SACO", "PLANCHA", "GALÓN DE GAS"];
   const inicial = { nombre: '', formato: 'UNIDAD', contenido: '1', cantidad: '', costoTotal: '' };
   const [form, setForm] = useState<any>(inicial);
 
@@ -29,7 +24,7 @@ const Investment: React.FC = () => {
     setForm({
       nombre: inv.nombre, 
       formato: inv.formato_compra,
-      contenido: inv.unidades_por_formato.toString(), 
+      contenido: (inv.unidades_por_formato || 1).toString(), 
       cantidad: inv.cantidad_formato.toString(),
       costoTotal: inv.costo_total.toString()
     });
@@ -40,10 +35,10 @@ const Investment: React.FC = () => {
     if (!form.nombre || !form.cantidad || !form.costoTotal) {
         return showNotification("⚠️ Llene los campos obligatorios", true);
     }
-    
     setBloqueado(true);
-    const esBulto = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA'].includes(form.formato);
-    const unidPack = (form.formato === 'PAQUETE' || form.formato === 'CAJA') ? Number(form.contenido) : 1;
+    
+    const bultos = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'];
+    const unidPack = bultos.includes(form.formato) ? Number(form.contenido) : 1;
     
     const datos = {
       nombre: form.nombre, 
@@ -61,7 +56,6 @@ const Investment: React.FC = () => {
         await guardarInversion(datos);
         showNotification("✅ GUARDADO");
       }
-      
       setForm(inicial);
       setEditId(null);
       setRefreshKey(k => k + 1);
@@ -79,10 +73,21 @@ const Investment: React.FC = () => {
           <ShoppingBag size={40} /> 
           <span>{editId ? 'MODO EDICIÓN' : 'REGISTRO DE COMPRA'}</span>
         </div>
-        <button className="btn-dashboard" onClick={() => navigate('/dashboard')}><LayoutDashboard /> DASHBOARD</button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            className="btn-dashboard" 
+            style={{ background: '#10b981' }} 
+            onClick={() => window.open('https://simona-pl4b.onrender.com/#/inventario', '_blank')}
+          >
+            <Package size={20} /> INVENTARIO
+          </button>
+          <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
+            <LayoutDashboard /> DASHBOARD
+          </button>
+        </div>
       </div>
 
-      <div className="seccion-formulario-centrada" style={{ flexDirection: 'column', alignItems: 'center' }}>
+      <div className="seccion-formulario-centrada">
         <div className={`tarjeta-blanca formulario ${editId ? 'borde-azul' : ''}`}>
           
           <label className="etiqueta-grande">Producto</label>
@@ -94,46 +99,28 @@ const Investment: React.FC = () => {
             {formatos.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
-          {(form.formato === 'PAQUETE' || 
-            form.formato === 'CAJA' || 
-            form.formato === 'SACO' || 
-            form.formato === 'PLANCHA') && (
-            <div className="alerta-formato">
+          {['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'].includes(form.formato) && (
+            <div className="alerta-formato" style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '2px dashed #cbd5e1' }}>
               <label className="etiqueta-grande"><Box size={20} /> Unidades por {form.formato}</label>
-              <input 
-                type="number" 
-                className="campo-gigante" 
-                value={form.contenido} 
-                onChange={e => setForm({...form, contenido: e.target.value})} 
-              />
+              <input type="number" className="campo-gigante" style={{ marginBottom: 0 }} value={form.contenido} onChange={e => setForm({...form, contenido: e.target.value})} />
             </div>
           )}
 
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
                 <label className="etiqueta-grande">Cantidad</label>
-                <input 
-                    type="number" 
-                    className="campo-gigante" 
-                    value={form.cantidad} 
-                    onChange={e => setForm({...form, cantidad: e.target.value})} 
-                />
+                <input type="number" className="campo-gigante" value={form.cantidad} onChange={e => setForm({...form, cantidad: e.target.value})} />
             </div>
             <div style={{ flex: 1 }}>
                 <label className="etiqueta-grande">Costo Total</label>
                 <div className="contenedor-input-soles">
                     <span className="simbolo-soles">S/.</span>
-                    <input 
-                        type="number" 
-                        className="campo-gigante input-con-prefijo" 
-                        value={form.costoTotal} 
-                        onChange={e => setForm({...form, costoTotal: e.target.value})} 
-                    />
+                    <input type="number" className="campo-gigante input-con-prefijo" value={form.costoTotal} onChange={e => setForm({...form, costoTotal: e.target.value})} />
                 </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', gap: '20px' }}>
             <button className="btn-accion-gigante btn-gris" onClick={() => {setForm(inicial); setEditId(null);}}><RotateCcw /> {editId ? 'CANCELAR' : 'LIMPIAR'}</button>
             <button className="btn-accion-gigante btn-verde" onClick={handleGuardar} disabled={bloqueado}>
                 <Save /> {bloqueado ? '...' : (editId ? 'ACTUALIZAR' : 'GUARDAR')}
@@ -141,7 +128,7 @@ const Investment: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ width: '100%', maxWidth: '850px' }}>
+        <div style={{ width: '100%', maxWidth: '850px', marginTop: '30px' }}>
           <PurchaseHistoryTable refreshKey={refreshKey} onEdit={handleEdit} />
         </div>
       </div>
