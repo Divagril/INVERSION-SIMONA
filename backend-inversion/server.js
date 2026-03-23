@@ -54,25 +54,14 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     try {
         const db = mongoose.connection.db;
-        if (!db) return res.status(503).json({ error: "Conectando a la base de datos..." });
+        if (!db) return res.status(503).json({ error: "Conectando..." });
 
         const { desde, hasta, producto } = req.query;
-        const regex = producto ? new RegExp(producto, 'i') : null;
+        const regex = producto ? new RegExp(producto.trim(), 'i') : null;
 
-        // 1. FILTROS PARA MONGODB
+        // 1. Filtros
         let queryInv = producto ? { nombre: { $regex: regex } } : {};
-        
-        // Filtro para Ventas: busca en el array 'productos' ya sea en 'nombre' o 'nombre_producto'
-        let queryVts = producto ? {
-            "productos": {
-                $elemMatch: {
-                    $or: [
-                        { "nombre": { $regex: regex } },
-                        { "nombre_producto": { $regex: regex } }
-                    ]
-                }
-            }
-        } : {};
+        let queryVts = producto ? { "productos": { $elemMatch: { $or: [{ "nombre": regex }, { "nombre_producto": regex }] } } } : {};
 
         if (desde || hasta) {
             const f = {};
@@ -82,52 +71,66 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
+        // 2. Consultas
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray(),
             db.collection('ventas').find(queryVts).toArray(),
-            db.collection('clientes').find({}).toArray()
+            db.collection('clientes').find({}).toArray() // Traemos clientes para ver deuda actual
         ]);
 
-        // 2. CÁLCULO DE INVERSIÓN
-        const inversionTotal = invs.reduce((acc, i) => acc + Number(i.costoTotal || i.costo_total || 0), 0);
+        // 3. Cálculo de Inversión
+        const inversionTotal = invs.reduce((acc, i) => acc + Number(i.costoTotal || 0), 0);
 
-        // 3. CÁLCULO DE CAJA Y FIADOS (DESDE VENTAS)
-        let dineroEnCaja = 0;
-        let plataPorCobrar = 0;
+        // 4. LÓGICA DE CAJA Y FIADO REAL POR PRODUCTO
+        let ventasCobradasDirectas = 0; // Efectivo/Yape en el momento
+        let ventasOriginalmenteFiadas = 0; // Lo que se vendió como fiado alguna vez
 
         vts.forEach(v => {
-            // Sumamos solo el valor que corresponde al producto filtrado en esta boleta
-            const subtotalEsteProducto = v.productos
+            const subtotalProd = v.productos
                 .filter(p => !producto || regex.test(p.nombre || p.nombre_producto || ""))
-                .reduce((sum, p) => sum + Number(p.subtotal || p.precio_total || (p.precio * p.cantidad) || 0), 0);
+                .reduce((sum, p) => sum + Number(p.subtotal || (p.precio * p.cantidad) || 0), 0);
 
-            // Normalizamos el método de pago para que no importe si es minúscula o tiene espacios
-            const metodo = (v.metodoPago || "").toString().trim().toUpperCase();
-
-            if (metodo === "FIADO") {
-                plataPorCobrar += subtotalEsteProducto;
+            const metodo = (v.metodoPago || "").toUpperCase();
+            if (metodo.includes("FIADO")) {
+                ventasOriginalmenteFiadas += subtotalProd;
             } else {
-                // Si es YAPE, EFECTIVO, PLIN, etc, es dinero cobrado -> VA A CAJA
-                dineroEnCaja += subtotalEsteProducto;
+                ventasCobradasDirectas += subtotalProd;
             }
         });
 
-        // 4. AJUSTE PARA VISTA GLOBAL (SI NO HAY FILTRO DE PRODUCTO)
-        // Si no hay producto, usamos la deuda de la colección clientes para ser más exactos con la vista de deudas.
-        if (!producto) {
-            plataPorCobrar = clts.reduce((acc, c) => acc + Number(c.deudaTotal || 0), 0);
+        // 5. CALCULAR DEUDA VIVA (Lo que todavía está en la lista de deudores)
+        let deudaActualReal = 0;
+        if (producto) {
+            // Buscamos dentro de los detalles_deuda de todos los clientes
+            clts.forEach(cliente => {
+                if (cliente.detalles_deuda && cliente.detalles_deuda.length > 0) {
+                    const deudaDeEsteProducto = cliente.detalles_deuda
+                        .filter(d => regex.test(d.nombre || d.nombre_producto || ""))
+                        .reduce((sum, d) => sum + Number(d.precio || 0), 0);
+                    deudaActualReal += deudaDeEsteProducto;
+                }
+            });
+        } else {
+            // Si no hay filtro, la deuda es el total de la colección clientes
+            deudaActualReal = clts.reduce((acc, c) => acc + Number(c.deudaTotal || 0), 0);
         }
+
+        // 6. EL MOMENTO CLAVE:
+        // El dinero cobrado de fiados = (Todo lo que se fío alguna vez) - (Lo que todavía deben)
+        const cobradoDeFiados = ventasOriginalmenteFiadas - deudaActualReal;
+        
+        // CAJA = Lo que se cobró al momento + Lo que se cobró después de que pagaran su deuda
+        const dineroEnCaja = ventasCobradasDirectas + cobradoDeFiados;
 
         res.json({
             inversionTotal,
-            dineroEnCaja,
-            plataPorCobrar,
-            // FÓRMULA SOLICITADA: GANANCIA = LO QUE ENTRO (CAJA) - LO QUE GASTASTE (INVERSION)
-            gananciaReal: dineroEnCaja - inversionTotal
+            dineroEnCaja, // Dinero físico que ya tienes (Directo + Pagos de Deudas)
+            plataPorCobrar: deudaActualReal, // Lo que todavía te deben
+            gananciaReal: dineroEnCaja - inversionTotal // GANANCIA = CAJA - INVERSION
         });
 
     } catch (e) {
-        console.error("Error en Dashboard:", e);
+        console.error(e);
         res.status(500).json({ error: e.message });
     }
 });
