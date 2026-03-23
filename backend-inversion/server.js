@@ -43,31 +43,36 @@ app.get('/api/inversiones', async (req, res) => {
         res.json(datosNormalizados);
     } catch (e) { res.status(500).json([]); }
 });
+
+app.put('/api/inversiones/:id', async (req, res) => {
+    try {
+        const updated = await Inversion.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updated);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
 app.get('/api/dashboard/rentabilidad', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     try {
         const db = mongoose.connection.db;
-        if (!db) return res.status(503).json({ error: "Conectando a BD..." });
+        if (!db) return res.status(503).json({ error: "Conectando a la base de datos..." });
 
         const { desde, hasta, producto } = req.query;
+        const regex = producto ? new RegExp(producto, 'i') : null;
 
-        // 1. Filtro de Inversiones
-        let queryInv = producto ? { nombre: { $regex: new RegExp(producto, 'i') } } : {};
-
-        // 2. Filtro de Ventas (buscando el producto dentro del array)
-        let queryVts = {};
-        if (producto) {
-            queryVts = {
-                "productos": { 
-                    $elemMatch: { 
-                        $or: [
-                            { "nombre_producto": { $regex: new RegExp(producto, 'i') } },
-                            { "nombre": { $regex: new RegExp(producto, 'i') } }
-                        ] 
-                    } 
+        // 1. FILTROS PARA MONGODB
+        let queryInv = producto ? { nombre: { $regex: regex } } : {};
+        
+        // Filtro para Ventas: busca en el array 'productos' ya sea en 'nombre' o 'nombre_producto'
+        let queryVts = producto ? {
+            "productos": {
+                $elemMatch: {
+                    $or: [
+                        { "nombre": { $regex: regex } },
+                        { "nombre_producto": { $regex: regex } }
+                    ]
                 }
-            };
-        }
+            }
+        } : {};
 
         if (desde || hasta) {
             const f = {};
@@ -77,71 +82,54 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
-        // 3. Ejecutar consultas
         const [invs, vts, clts] = await Promise.all([
-            db.collection('inversions').find(queryInv).toArray().catch(() => []),
-            db.collection('ventas').find(queryVts).toArray().catch(() => []),
-            db.collection('clientes').find({}).toArray().catch(() => [])
+            db.collection('inversions').find(queryInv).toArray(),
+            db.collection('ventas').find(queryVts).toArray(),
+            db.collection('clientes').find({}).toArray()
         ]);
 
-        // --- LÓGICA DE CÁLCULO CORREGIDA ---
+        // 2. CÁLCULO DE INVERSIÓN
+        const inversionTotal = invs.reduce((acc, i) => acc + Number(i.costoTotal || i.costo_total || 0), 0);
 
-        const totalInversion = invs.reduce((acc, i) => acc + (Number(i.costoTotal || i.costo_total || 0)), 0);
-        
-        // Sumar ingresos totales de ventas (solo de los productos filtrados si hay filtro)
-        const totalVentas = vts.reduce((acc, v) => {
-            if (producto) {
-                const subtotal = v.productos
-                    .filter(p => new RegExp(producto, 'i').test(p.nombre_producto || p.nombre || ""))
-                    .reduce((sum, p) => sum + (Number(p.subtotal || p.precio_total || 0)), 0);
-                return acc + subtotal;
+        // 3. CÁLCULO DE CAJA Y FIADOS (DESDE VENTAS)
+        let dineroEnCaja = 0;
+        let plataPorCobrar = 0;
+
+        vts.forEach(v => {
+            // Sumamos solo el valor que corresponde al producto filtrado en esta boleta
+            const subtotalEsteProducto = v.productos
+                .filter(p => !producto || regex.test(p.nombre || p.nombre_producto || ""))
+                .reduce((sum, p) => sum + Number(p.subtotal || p.precio_total || (p.precio * p.cantidad) || 0), 0);
+
+            // Normalizamos el método de pago para que no importe si es minúscula o tiene espacios
+            const metodo = (v.metodoPago || "").toString().trim().toUpperCase();
+
+            if (metodo === "FIADO") {
+                plataPorCobrar += subtotalEsteProducto;
+            } else {
+                // Si es YAPE, EFECTIVO, PLIN, etc, es dinero cobrado -> VA A CAJA
+                dineroEnCaja += subtotalEsteProducto;
             }
-            return acc + (Number(v.total || 0));
-        }, 0);
+        });
 
-        // CORRECCIÓN DE FIADOS:
-        let totalFiados = 0;
-        if (producto) {
-            // Si hay producto, calculamos la deuda solo de las ventas filtradas que fueron fiadas
-            totalFiados = vts.reduce((acc, v) => {
-                // Si la venta tiene saldo pendiente (fiado)
-                const deudaDeEstaVenta = Number(v.total || 0) - Number(v.monto_pagado || v.pagado || 0);
-                if (deudaDeEstaVenta > 0) {
-                    // Calculamos qué parte de esa deuda le corresponde al producto filtrado
-                    const proporcionProducto = v.productos
-                        .filter(p => new RegExp(producto, 'i').test(p.nombre_producto || p.nombre || ""))
-                        .reduce((sum, p) => sum + (Number(p.subtotal || p.precio_total || 0)), 0);
-                    
-                    // Si la venta es de 100 y el producto es de 50, se asume que el fiado es proporcional
-                    return acc + proporcionProducto; 
-                }
-                return acc;
-            }, 0);
-        } else {
-            // Si no hay filtro, mostramos la deuda total de todos los clientes (como antes)
-            totalFiados = clts.reduce((acc, c) => acc + (Number(c.deudaTotal || 0)), 0);
+        // 4. AJUSTE PARA VISTA GLOBAL (SI NO HAY FILTRO DE PRODUCTO)
+        // Si no hay producto, usamos la deuda de la colección clientes para ser más exactos con la vista de deudas.
+        if (!producto) {
+            plataPorCobrar = clts.reduce((acc, c) => acc + Number(c.deudaTotal || 0), 0);
         }
 
         res.json({
-            inversionTotal: totalInversion,
-            ingresosTotalesVentas: totalVentas,
-            plataPorCobrar: totalFiados,
-            dineroEnCaja: totalVentas - totalFiados,
-            gananciaReal: (totalVentas - totalFiados) - totalInversion
+            inversionTotal,
+            dineroEnCaja,
+            plataPorCobrar,
+            // FÓRMULA SOLICITADA: GANANCIA = LO QUE ENTRO (CAJA) - LO QUE GASTASTE (INVERSION)
+            gananciaReal: dineroEnCaja - inversionTotal
         });
 
     } catch (e) {
-        console.error(e);
+        console.error("Error en Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
-});
-
-// 4. Actualizar Inversión
-app.put('/api/inversiones/:id', async (req, res) => {
-    try {
-        const updated = await Inversion.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updated);
-    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // 5. Eliminar Inversión

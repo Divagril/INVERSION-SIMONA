@@ -71,15 +71,15 @@ const DashboardInversion: React.FC = () => {
           <span className="valor-card color-naranja">{fMone(stats.inversionTotal)}</span>
         </div>
         <div className="card-pos borde-verde">
-          <span className="label-card">CAJA</span>
+          <span className="label-card">CAJA (PAGADO)</span>
           <span className="valor-card color-verde">{fMone(stats.dineroEnCaja)}</span>
         </div>
         <div className="card-pos borde-rojo">
-          <span className="label-card">FIADOS</span>
+          <span className="label-card">FIADOS  (PENDIENTE)</span>
           <span className="valor-card color-rojo">{fMone(stats.plataPorCobrar)}</span>
         </div>
         <div className="card-pos borde-azul">
-          <span className="label-card">GANANCIA</span>
+          <span className="label-card">GANANCIA REAAL</span>
           <span className={`valor-card ${stats.gananciaReal >= 0 ? 'color-verde' : 'color-rojo'}`}>
             {fMone(stats.gananciaReal)}
           </span>

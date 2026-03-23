@@ -14,15 +14,11 @@ interface FiltrosRentabilidad {
   producto?: string;
   [key: string]: any; // Permite cualquier otra propiedad dinámica
 }
-
-export const getRentabilidad = async (filtros: FiltrosRentabilidad = {}) => {
-    const paramsObj = {
-        ...filtros,
-        t: Date.now().toString()
-    };
-    
-    // URLSearchParams acepta un objeto, TypeScript lo validará bien aquí
-    const params = new URLSearchParams(paramsObj as Record<string, string>).toString();
+export const getRentabilidad = async (filtros: any = {}) => {
+    const params = new URLSearchParams({ 
+        ...filtros, 
+        t: Date.now().toString() // Esto limpia el caché del navegador
+    }).toString();
     const res = await axios.get(`${API_URL}/dashboard/rentabilidad?${params}`);
     return res.data;
 };
