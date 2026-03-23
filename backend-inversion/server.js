@@ -59,7 +59,7 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
         const { desde, hasta, producto } = req.query;
         const regex = producto ? new RegExp(producto.trim(), 'i') : null;
 
-        // 1. Filtros
+        // 1. FILTROS
         let queryInv = producto ? { nombre: { $regex: regex } } : {};
         let queryVts = producto ? { "productos": { $elemMatch: { $or: [{ "nombre": regex }, { "nombre_producto": regex }] } } } : {};
 
@@ -71,19 +71,19 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
             queryVts.fecha = f;
         }
 
-        // 2. Consultas
+        // 2. CONSULTAS
         const [invs, vts, clts] = await Promise.all([
             db.collection('inversions').find(queryInv).toArray(),
             db.collection('ventas').find(queryVts).toArray(),
-            db.collection('clientes').find({}).toArray() // Traemos clientes para ver deuda actual
+            db.collection('clientes').find({}).toArray()
         ]);
 
-        // 3. Cálculo de Inversión
+        // 3. CÁLCULO DE INVERSIÓN
         const inversionTotal = invs.reduce((acc, i) => acc + Number(i.costoTotal || 0), 0);
 
-        // 4. LÓGICA DE CAJA Y FIADO REAL POR PRODUCTO
-        let ventasCobradasDirectas = 0; // Efectivo/Yape en el momento
-        let ventasOriginalmenteFiadas = 0; // Lo que se vendió como fiado alguna vez
+        // 4. LÓGICA DE DINERO POR PRODUCTO
+        let dineroCobradoDirecto = 0; // Efectivo/Yape al momento de la venta
+        let totalVendidoAlFiado = 0;   // Monto que se mandó a deuda originalmente
 
         vts.forEach(v => {
             const subtotalProd = v.productos
@@ -92,45 +92,44 @@ app.get('/api/dashboard/rentabilidad', async (req, res) => {
 
             const metodo = (v.metodoPago || "").toUpperCase();
             if (metodo.includes("FIADO")) {
-                ventasOriginalmenteFiadas += subtotalProd;
+                totalVendidoAlFiado += subtotalProd;
             } else {
-                ventasCobradasDirectas += subtotalProd;
+                dineroCobradoDirecto += subtotalProd;
             }
         });
 
-        // 5. CALCULAR DEUDA VIVA (Lo que todavía está en la lista de deudores)
-        let deudaActualReal = 0;
-        if (producto) {
-            // Buscamos dentro de los detalles_deuda de todos los clientes
-            clts.forEach(cliente => {
-                if (cliente.detalles_deuda && cliente.detalles_deuda.length > 0) {
-                    const deudaDeEsteProducto = cliente.detalles_deuda
-                        .filter(d => regex.test(d.nombre || d.nombre_producto || ""))
-                        .reduce((sum, d) => sum + Number(d.precio || 0), 0);
-                    deudaActualReal += deudaDeEsteProducto;
-                }
-            });
-        } else {
-            // Si no hay filtro, la deuda es el total de la colección clientes
-            deudaActualReal = clts.reduce((acc, c) => acc + Number(c.deudaTotal || 0), 0);
-        }
+        // 5. CÁLCULO DE DEUDA ACTUAL (Lo que todavía no pagan)
+        let deudaPendienteActual = 0;
+        clts.forEach(cliente => {
+            if (cliente.detalles_deuda) {
+                const deudasProducto = cliente.detalles_deuda.filter(d => 
+                    !producto || regex.test(d.nombre || d.nombre_producto || "")
+                );
+                deudaPendienteActual += deudasProducto.reduce((sum, d) => sum + Number(d.precio || 0), 0);
+            }
+        });
 
-        // 6. EL MOMENTO CLAVE:
-        // El dinero cobrado de fiados = (Todo lo que se fío alguna vez) - (Lo que todavía deben)
-        const cobradoDeFiados = ventasOriginalmenteFiadas - deudaActualReal;
+        // 6. EL DINERO DE LOS ABONOS:
+        // Si vendí S/ 3.00 al fiado originalmente, pero en la lista de deudores solo figuran S/ 2.00,
+        // significa que ya me abonaron S/ 1.00.
+        const dineroCobradoDeAbonos = totalVendidoAlFiado - deudaPendienteActual;
+
+        // RESULTADOS FINALES
+        // CAJA = Lo cobrado al momento + Los abonos que hicieron después
+        const dineroEnCaja = dineroCobradoDirecto + (dineroCobradoDeAbonos > 0 ? dineroCobradoDeAbonos : 0);
         
-        // CAJA = Lo que se cobró al momento + Lo que se cobró después de que pagaran su deuda
-        const dineroEnCaja = ventasCobradasDirectas + cobradoDeFiados;
+        // FIADOS = Lo que todavía aparece en la colección de clientes
+        const fiadosFinal = deudaPendienteActual;
 
         res.json({
             inversionTotal,
-            dineroEnCaja, // Dinero físico que ya tienes (Directo + Pagos de Deudas)
-            plataPorCobrar: deudaActualReal, // Lo que todavía te deben
-            gananciaReal: dineroEnCaja - inversionTotal // GANANCIA = CAJA - INVERSION
+            dineroEnCaja, 
+            plataPorCobrar: fiadosFinal,
+            gananciaReal: dineroEnCaja - inversionTotal 
         });
 
     } catch (e) {
-        console.error(e);
+        console.error("Error Dashboard:", e);
         res.status(500).json({ error: e.message });
     }
 });
