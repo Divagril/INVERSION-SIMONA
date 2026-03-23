@@ -13,7 +13,7 @@ const Investment: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [bloqueado, setBloqueado] = useState(false);
   const formatos = [
-  "UNIDAD", "BOTELLA", "LATA", "LATAS", "KG", 
+  "UNIDAD", "BOTELLA", "LATA", "KG", 
   "LITRO", "METRO", "PAQUETE", "CAJA", 
   "SACO", "PLANCHA", "GALÓN DE GAS"
 ];
@@ -42,7 +42,7 @@ const Investment: React.FC = () => {
     }
     
     setBloqueado(true);
-    const esBulto = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'].includes(form.formato);
+    const esBulto = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA'].includes(form.formato);
     const unidPack = (form.formato === 'PAQUETE' || form.formato === 'CAJA') ? Number(form.contenido) : 1;
     
     const datos = {
@@ -97,8 +97,7 @@ const Investment: React.FC = () => {
           {(form.formato === 'PAQUETE' || 
             form.formato === 'CAJA' || 
             form.formato === 'SACO' || 
-            form.formato === 'PLANCHA' || 
-            form.formato === 'LATAS') && (
+            form.formato === 'PLANCHA') && (
             <div className="alerta-formato">
               <label className="etiqueta-grande"><Box size={20} /> Unidades por {form.formato}</label>
               <input 
