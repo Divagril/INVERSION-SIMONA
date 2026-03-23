@@ -12,8 +12,11 @@ const Investment: React.FC = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [bloqueado, setBloqueado] = useState(false);
-
-  const formatos = ["UNIDAD", "BOTELLA", "LATA", "KG", "LITRO", "METRO", "PAQUETE", "CAJA", "GALÓN DE GAS"];
+  const formatos = [
+  "UNIDAD", "BOTELLA", "LATA", "LATAS", "KG", 
+  "LITRO", "METRO", "PAQUETE", "CAJA", 
+  "SACO", "PLANCHA", "GALÓN DE GAS"
+];
   
   // Usamos strings vacíos para que los inputs se puedan limpiar totalmente
   const inicial = { nombre: '', formato: 'UNIDAD', contenido: '1', cantidad: '', costoTotal: '' };
@@ -39,8 +42,7 @@ const Investment: React.FC = () => {
     }
     
     setBloqueado(true);
-    
-    // Aquí es donde convertimos a número para enviar a la base de datos
+    const esBulto = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'].includes(form.formato);
     const unidPack = (form.formato === 'PAQUETE' || form.formato === 'CAJA') ? Number(form.contenido) : 1;
     
     const datos = {
@@ -92,10 +94,13 @@ const Investment: React.FC = () => {
             {formatos.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
-          {(form.formato === 'PAQUETE' || form.formato === 'CAJA') && (
+          {(form.formato === 'PAQUETE' || 
+            form.formato === 'CAJA' || 
+            form.formato === 'SACO' || 
+            form.formato === 'PLANCHA' || 
+            form.formato === 'LATAS') && (
             <div className="alerta-formato">
               <label className="etiqueta-grande"><Box size={20} /> Unidades por {form.formato}</label>
-              {/* CAMBIO: Quitamos el Number() del onChange para que te deje borrar el 0 */}
               <input 
                 type="number" 
                 className="campo-gigante" 
