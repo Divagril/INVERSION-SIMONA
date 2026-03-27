@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProductos, guardarInversion, actualizarInversion } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
-import { Save, RotateCcw, LayoutDashboard, ShoppingBag, Box, Package } from 'lucide-react';
+import { Save, RotateCcw, LayoutDashboard, ShoppingBag, Box, Package , Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PurchaseHistoryTable from '../components/PurchaseHistoryTable';
 
@@ -13,7 +13,7 @@ const Investment: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [bloqueado, setBloqueado] = useState(false);
 
-  const formatos = ["UNIDAD", "BOTELLA", "LATA", "LATAS", "KG", "LITRO", "METRO", "PAQUETE", "CAJA", "SACO", "PLANCHA", "GALÓN DE GAS"];
+  const formatos = ["UNIDAD", "BOTELLA", "LATA", "KG", "LITRO", "METRO", "PAQUETE", "CAJA", "SACO", "PLANCHA", "GALÓN DE GAS" , "TIRA", "BOLSA"];
   const inicial = { nombre: '', formato: 'UNIDAD', contenido: '1', cantidad: '', costoTotal: '' };
   const [form, setForm] = useState<any>(inicial);
 
@@ -37,7 +37,7 @@ const Investment: React.FC = () => {
     }
     setBloqueado(true);
     
-    const bultos = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'];
+    const bultos = ['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'TIRA', 'BOLSA'];
     const unidPack = bultos.includes(form.formato) ? Number(form.contenido) : 1;
     
     const datos = {
@@ -89,9 +89,15 @@ const Investment: React.FC = () => {
 
       <div className="seccion-formulario-centrada">
         <div className={`tarjeta-blanca formulario ${editId ? 'borde-azul' : ''}`}>
+        <div style={{background: '#e0f2fe',color: '#0369a1',padding: '15px 20px',borderRadius: '12px',marginBottom: '25px',display: 'flex',alignItems: 'center',gap: '12px',fontSize: '15px',fontWeight: '600',border: '2px solid #bae6fd'}}>
+         <Info size={28} style={{ flexShrink: 0 }} />
+          <span>
+            <strong>Nota importante:</strong> Aquí debes registrar todos los productos que le compraste al proveedor para abastecer tu negocio.
+          </span>
+        </div>
           
           <label className="etiqueta-grande">Producto</label>
-          <input list="prods" className="campo-gigante" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} placeholder="Ej: Azucar" />
+          <input list="prods" className="campo-gigante" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})}/>
           <datalist id="prods">{productos.map((p, i) => <option key={i} value={p.nombre} />)}</datalist>
 
           <label className="etiqueta-grande">Formato de Compra</label>
@@ -99,7 +105,7 @@ const Investment: React.FC = () => {
             {formatos.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
-          {['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'LATAS'].includes(form.formato) && (
+          {['PAQUETE', 'CAJA', 'SACO', 'PLANCHA', 'TIRA', 'BOLSA'].includes(form.formato) && (
             <div className="alerta-formato" style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '2px dashed #cbd5e1' }}>
               <label className="etiqueta-grande"><Box size={20} /> Unidades por {form.formato}</label>
               <input type="number" className="campo-gigante" style={{ marginBottom: 0 }} value={form.contenido} onChange={e => setForm({...form, contenido: e.target.value})} />
@@ -108,7 +114,7 @@ const Investment: React.FC = () => {
 
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
-                <label className="etiqueta-grande">Cantidad</label>
+                <label className="etiqueta-grande">CANTIDAD DE {form.formato}</label>
                 <input type="number" className="campo-gigante" value={form.cantidad} onChange={e => setForm({...form, cantidad: e.target.value})} />
             </div>
             <div style={{ flex: 1 }}>
